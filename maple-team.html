@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maple Team — How It Works</title>
+
+<!-- SEO -->
+<meta name="description" content="Maple Team — five specialist AI agents, one orchestrator. An animated walkthrough of the pipeline: architect plans, advisor weighs in, engineers build, QA breaks it on purpose. Nothing ships unproven.">
+<meta name="author" content="RJ Baquirin">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#120c09">
+<meta name="color-scheme" content="dark">
+
+<!-- Open Graph (Facebook / LinkedIn / Slack / Discord) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Maple Team — How It Works">
+<meta property="og:description" content="Five specialist AI agents, one orchestrator. Watch a task travel the pipeline: plan, second opinion, build, escalate, QA verdict.">
+<meta property="og:site_name" content="Maple Team">
+<meta property="og:locale" content="en_US">
+<!-- TODO before deploy: set your real URLs -->
+<!-- <meta property="og:url" content="https://yourdomain.com/maple-team"> -->
+<!-- <meta property="og:image" content="https://yourdomain.com/maple-team-og.png"> -->
+<!-- <meta property="og:image:width" content="1200"> -->
+<!-- <meta property="og:image:height" content="630"> -->
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Maple Team — How It Works">
+<meta name="twitter:description" content="Five specialist AI agents, one orchestrator. Animated pipeline: plan, second opinion, build, escalate, QA verdict.">
+<!-- <meta name="twitter:image" content="https://yourdomain.com/maple-team-og.png"> -->
+
+<!-- Favicon (inline, no extra file needed) -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍁</text></svg>">
+
+<!-- <link rel="canonical" href="https://yourdomain.com/maple-team"> -->
+
+<style>
+  :root{
+    --bg:#120c09; --bg2:#19100b; --panel:#1e1410; --line:#3a2a1e;
+    --ink:#f3e8da; --dim:#b8a08f; --faint:#7d685a;
+    --ember:#e8613c; --amber:#ffb454;
+    --c-advisor:#b48ee8; --c-architect:#6fc48b; --c-eng:#5fa8f5; --c-hard:#7f8ef0; --c-qa:#ffb454;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    line-height:1.6; overflow-x:hidden;
+  }
+  #leaves{position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5}
+  .wrap{position:relative; z-index:1; max-width:1160px; margin:0 auto; padding:0 24px}
+
+  /* ---------- hero ---------- */
+  header{padding:9vh 0 4vh; text-align:center}
+  .eyebrow{
+    font-family:var(--mono); font-size:12px; letter-spacing:.28em; text-transform:uppercase;
+    color:var(--amber); margin-bottom:20px;
+    opacity:0; animation:rise .9s .1s ease-out forwards;
+  }
+  h1{
+    font-family:var(--serif); font-weight:600; margin:0;
+    font-size:clamp(52px,9vw,110px); line-height:.95; letter-spacing:-.02em; text-wrap:balance;
+    opacity:0; animation:rise 1s .25s ease-out forwards;
+  }
+  h1 .leaf{display:inline-block; animation:sway 6s ease-in-out infinite; transform-origin:50% 90%}
+  .sub{
+    font-family:var(--serif); font-style:italic; font-size:clamp(17px,2.2vw,22px);
+    color:var(--dim); max-width:34em; margin:26px auto 0; text-wrap:balance;
+    opacity:0; animation:rise 1s .45s ease-out forwards;
+  }
+  @keyframes rise{from{opacity:0; transform:translateY(22px)}to{opacity:1; transform:none}}
+  @keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(5deg)}}
+
+  /* ---------- section titles ---------- */
+  h2{
+    font-family:var(--serif); font-weight:600; font-size:clamp(26px,3.4vw,36px);
+    margin:0 0 6px; letter-spacing:-.01em; text-wrap:balance;
+  }
+  .kicker{
+    font-family:var(--mono); font-size:11px; letter-spacing:.26em; text-transform:uppercase;
+    color:var(--ember); display:block; margin-bottom:12px;
+  }
+  section{padding:56px 0}
+
+  /* ---------- stage / diagram ---------- */
+  .stage{
+    background:linear-gradient(180deg,var(--bg2),var(--panel));
+    border:1px solid var(--line); border-radius:18px; padding:8px 8px 0;
+    box-shadow:0 30px 80px -30px rgba(0,0,0,.8);
+  }
+  #diagram{width:100%; height:auto; display:block}
+  .edge{fill:none; stroke:var(--line); stroke-width:2}
+  .edge.esc{stroke-dasharray:7 7}
+  .node circle.core{stroke-width:2; transition:filter .4s, opacity .4s}
+  .node text{fill:var(--ink); font-family:var(--serif); font-size:19px; font-weight:600}
+  .node .chip{fill:var(--faint); font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; font-weight:400}
+  .node .glyph{font-size:30px; font-family:var(--sans)}
+  .node .ring{fill:none; stroke-width:2; opacity:0}
+  .node.dimmed{opacity:.32}
+  .node{transition:opacity .45s}
+  .node.active .ring{opacity:1; animation:ringPulse 1.6s ease-out infinite}
+  @keyframes ringPulse{
+    0%{transform:scale(1); opacity:.9}
+    100%{transform:scale(1.55); opacity:0}
+  }
+  .node .ring{transform-box:fill-box; transform-origin:center}
+  .pulse{filter:drop-shadow(0 0 8px currentColor)}
+  .youbadge{fill:var(--ink); font-family:var(--mono); font-size:12px; letter-spacing:.2em}
+
+  /* ---------- caption / transport ---------- */
+  .transport{
+    display:flex; flex-wrap:wrap; gap:18px; align-items:center;
+    border-top:1px solid var(--line); margin-top:4px; padding:18px 22px 20px;
+  }
+  #playBtn{
+    background:var(--ember); color:#fff; border:0; border-radius:999px;
+    width:46px; height:46px; font-size:17px; cursor:pointer; flex:none;
+    display:grid; place-items:center; transition:transform .15s, background .2s;
+  }
+  #playBtn:hover{transform:scale(1.08); background:#f47450}
+  #playBtn:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+  .capbox{flex:1; min-width:260px}
+  .capstep{
+    font-family:var(--mono); font-size:11px; letter-spacing:.24em; text-transform:uppercase;
+    color:var(--amber); margin-bottom:3px; transition:opacity .3s;
+  }
+  .captext{
+    font-family:var(--serif); font-size:clamp(16px,2vw,20px); font-style:italic;
+    color:var(--ink); transition:opacity .3s; text-wrap:balance;
+  }
+  .fadeout .capstep,.fadeout .captext{opacity:0}
+  .dots{display:flex; gap:9px; flex:none; align-items:center}
+  .dots button{
+    width:11px; height:11px; border-radius:50%; border:1px solid var(--faint);
+    background:transparent; cursor:pointer; padding:0; transition:all .25s;
+  }
+  .dots button:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+  .dots button.on{background:var(--amber); border-color:var(--amber); transform:scale(1.35)}
+
+  /* ---------- cards ---------- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px; margin-top:34px}
+  .card{
+    background:var(--bg2); border:1px solid var(--line); border-radius:16px;
+    padding:26px 26px 22px; position:relative; overflow:hidden;
+    transition:transform .3s ease, border-color .3s, box-shadow .3s;
+  }
+  .card::after{
+    content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    background:radial-gradient(420px 160px at 20% -10%, var(--glow), transparent 70%);
+    opacity:0; transition:opacity .4s;
+  }
+  .card:hover{transform:translateY(-5px); border-color:var(--ac); box-shadow:0 24px 50px -24px rgba(0,0,0,.9)}
+  .card:hover::after{opacity:.22}
+  .sigil{
+    width:52px; height:52px; border-radius:14px; display:grid; place-items:center;
+    font-size:25px; margin-bottom:18px;
+    background:color-mix(in srgb, var(--ac) 16%, transparent);
+    border:1px solid color-mix(in srgb, var(--ac) 45%, transparent);
+  }
+  .card h3{font-family:var(--serif); font-size:22px; margin:0 0 4px; font-weight:600}
+  .badges{display:flex; gap:7px; flex-wrap:wrap; margin:10px 0 14px}
+  .badge{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    padding:4px 10px; border-radius:999px; border:1px solid var(--line); color:var(--dim);
+  }
+  .badge.model{border-color:color-mix(in srgb, var(--ac) 55%, transparent); color:var(--ac)}
+  .card p{margin:0; color:var(--dim); font-size:15px; max-width:36em}
+  .card .tools{
+    font-family:var(--mono); font-size:11.5px; color:var(--faint);
+    margin-top:16px; padding-top:14px; border-top:1px dashed var(--line);
+  }
+
+  /* ---------- constraints ---------- */
+  .laws{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:34px}
+  .law{border-left:2px solid var(--ember); padding:6px 0 6px 20px}
+  .law b{font-family:var(--serif); font-size:18px; font-weight:600; display:block; margin-bottom:5px}
+  .law span{color:var(--dim); font-size:15px}
+
+  /* ---------- lineage ---------- */
+  .inspire{border-top:1px solid var(--line); position:relative}
+  .maple-chan{
+    position:absolute; right:0; bottom:0; width:min(280px,34vw);
+    opacity:0; transform:translateY(70px);
+    transition:opacity .9s ease, transform .9s cubic-bezier(.2,.8,.25,1);
+    pointer-events:none; user-select:none;
+    filter:drop-shadow(0 12px 30px rgba(0,0,0,.6)) drop-shadow(0 0 24px rgba(232,97,60,.18));
+  }
+  .inspire.seen .maple-chan{opacity:1; transform:none}
+  @media (min-width:760px){ .inspire{padding-right:320px} }
+  @media (max-width:759px){ .inspire{padding-bottom:46vw} .maple-chan{width:42vw} }
+  .lore{
+    font-family:var(--serif); font-size:clamp(16px,2vw,19px); color:var(--dim);
+    max-width:44em; margin:18px 0 0; text-wrap:pretty;
+  }
+  .lore strong{color:var(--amber); font-weight:600}
+  .lore a{
+    color:var(--ink); text-decoration:none;
+    border-bottom:1px solid var(--ember); transition:color .2s, border-color .2s;
+  }
+  .lore a:hover{color:var(--ember); border-bottom-color:var(--amber)}
+  .lore a:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+
+  footer{
+    text-align:center; padding:60px 0 70px; color:var(--faint);
+    font-family:var(--mono); font-size:12px; letter-spacing:.16em;
+  }
+  footer em{color:var(--amber); font-style:normal}
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important; transition:none!important}
+    .eyebrow,h1,.sub{opacity:1}
+  }
+</style>
+
+</head>
+<body>
+<canvas id="leaves" aria-hidden="true"></canvas>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">~/.claude/agents · five specialists · one orchestrator</div>
+    <h1>Maple <span class="leaf">🍁</span> Team</h1>
+    <p class="sub">A plan is drawn, a second opinion is taken, code is built and broken on purpose — and nothing ships until QA says so. You hold the veto: the team never engages without asking first.</p>
+  </header>
+
+  <section>
+    <span class="kicker">Live run</span>
+    <h2>Watch a task travel the pipeline</h2>
+    <div class="stage">
+      <svg id="diagram" viewBox="0 0 1200 690" role="img" aria-label="Diagram of the Maple Team workflow: you approve, the orchestrator routes work between architect, advisor, engineers and QA">
+        <!-- edges -->
+        <path id="e-you-main"  class="edge" d="M600,108 L600,196"/>
+        <path id="e-main-arch" class="edge" d="M556,268 C420,340 300,380 246,432"/>
+        <path id="e-main-adv"  class="edge" d="M656,232 C790,222 900,222 986,230"/>
+        <path id="e-main-eng"  class="edge" d="M588,290 C570,350 556,390 552,428"/>
+        <path id="e-eng-hard"  class="edge esc" d="M610,492 C680,530 730,552 782,568"/>
+        <path id="e-main-qa"   class="edge" d="M652,262 C820,330 940,390 992,436"/>
+        <!-- pulse layer -->
+        <g id="pulses"></g>
+        <!-- nodes injected by JS -->
+        <g id="nodes"></g>
+      </svg>
+      <div class="transport">
+        <button id="playBtn" aria-label="Pause simulation">❚❚</button>
+        <div class="capbox" id="capbox" aria-live="polite">
+          <div class="capstep" id="capstep">Step 1 of 8</div>
+          <div class="captext" id="captext">…</div>
+        </div>
+        <div class="dots" id="dots" role="tablist" aria-label="Simulation steps"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="kicker">The roster</span>
+    <h2>Five dossiers</h2>
+    <div class="grid">
+      <div class="card" style="--ac:var(--c-architect); --glow:var(--c-architect)">
+        <div class="sigil">📐</div>
+        <h3>maple-architect</h3>
+        <div class="badges">
+          <span class="badge model">Opus 4.8 · ultrathink</span>
+          <span class="badge">read-only</span>
+        </div>
+        <p>Turns a fuzzy ask into a crisp spec and a numbered plan. Forced through the Superpowers skills — brainstorming first, then writing-plans. Never touches code.</p>
+        <div class="tools">Read · Grep · Glob · WebSearch · WebFetch · TodoWrite</div>
+      </div>
+      <div class="card" style="--ac:var(--c-advisor); --glow:var(--c-advisor)">
+        <div class="sigil">🦉</div>
+        <h3>maple-advisor</h3>
+        <div class="badges">
+          <span class="badge model">Opus 4.8</span>
+          <span class="badge">read-only</span>
+        </div>
+        <p>Deep second opinion for hard trade-offs. Verdict first, reasoning after — blunt and correct beats agreeable. Surfaces the risks everyone else missed.</p>
+        <div class="tools">Read · Grep · Glob · WebSearch · WebFetch</div>
+      </div>
+      <div class="card" style="--ac:var(--c-eng); --glow:var(--c-eng)">
+        <div class="sigil">🔨</div>
+        <h3>maple-engineer</h3>
+        <div class="badges">
+          <span class="badge model">Sonnet · think hard</span>
+          <span class="badge">writes code</span>
+        </div>
+        <p>Executes the architect's plan step by step. Test-driven: tests before implementation, real output quoted before anything is called done.</p>
+        <div class="tools">Read · Edit · Write · Grep · Glob · Bash · TodoWrite</div>
+      </div>
+      <div class="card" style="--ac:var(--c-hard); --glow:var(--c-hard)">
+        <div class="sigil">⚒️</div>
+        <h3>maple-engineer-hard</h3>
+        <div class="badges">
+          <span class="badge model">Opus 4.8 · ultrathink</span>
+          <span class="badge">writes code</span>
+        </div>
+        <p>The escalation path. Subtle concurrency, tricky algorithms, high blast radius — work where a wrong invariant costs a weekend. Reasons through failure modes first.</p>
+        <div class="tools">Read · Edit · Write · Grep · Glob · Bash · TodoWrite</div>
+      </div>
+      <div class="card" style="--ac:var(--c-qa); --glow:var(--c-qa)">
+        <div class="sigil">🔍</div>
+        <h3>maple-qa</h3>
+        <div class="badges">
+          <span class="badge model">Sonnet</span>
+          <span class="badge">read-only critic</span>
+        </div>
+        <p>Assumes it's broken until evidence says otherwise. Reads the diff, runs the tests itself, checks every plan requirement. Verdict: PASS / FAIL / PASS-WITH-NITS.</p>
+        <div class="tools">Read · Grep · Glob · Bash · browser tools on request</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="kicker">House rules</span>
+    <h2>Three laws the team lives by</h2>
+    <div class="laws">
+      <div class="law">
+        <b>Ask first, always</b>
+        <span>The team never auto-engages. On a coding task the orchestrator asks “Use Maple Team for this?” — no yes, no team.</span>
+      </div>
+      <div class="law">
+        <b>Agents can't call agents</b>
+        <span>Only the main thread routes. It carries the plan to the engineer and the diff to QA — every hand-off passes through the middle.</span>
+      </div>
+      <div class="law">
+        <b>Model is fixed at spawn</b>
+        <span>An agent can't change its own brain mid-run. Need more horsepower? Route to a different agent — that's why two engineers exist.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="inspire">
+    <span class="kicker">Lineage</span>
+    <h2>Named for a guild of eight</h2>
+    <p class="lore">
+      Maple Team takes its name from <a href="https://bofuri.fandom.com/wiki/Maple_Tree" target="_blank" rel="noopener">Guild Maple Tree</a> —
+      the tiny guild from the anime <a href="https://bofuri.fandom.com/wiki/I_Don%27t_Want_to_Get_Hurt,_so_I%27ll_Max_Out_My_Defense_Wiki" target="_blank" rel="noopener"><em>BOFURI: I Don't Want to Get Hurt, so I'll Max Out My Defense</em></a>.
+      A handful of members, each specialized to an absurd degree, beating guilds fifty times their size through
+      preparation and one stubborn principle: <strong>refuse to take damage.</strong>
+    </p>
+    <p class="lore">
+      Same philosophy here. A small roster of extreme specialists, and QA as the maxed-out defense —
+      nothing ships that can hurt you.
+    </p>
+    <img class="maple-chan" src="maple-render.png" alt="Maple from BOFURI in her black armor, shield at her side, reaching out with a smile" width="395" height="520">
+  </section>
+
+  <footer>orchestrated by the main thread · vetoed by <em>you</em> · 🍁</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- nodes ---------- */
+  var NODES = [
+    {id:"you",  x:600,  y:70,  r:38, color:"#e8613c", glyph:"👤", label:"YOU",            chip:"holds the veto"},
+    {id:"main", x:600,  y:232, r:44, color:"#ffb454", glyph:"🍁", label:"Orchestrator",   chip:"main thread"},
+    {id:"adv",  x:1040, y:232, r:40, color:"#b48ee8", glyph:"🦉", label:"Advisor",        chip:"opus · 2nd opinion"},
+    {id:"arch", x:216,  y:470, r:42, color:"#6fc48b", glyph:"📐", label:"Architect",      chip:"opus · ultrathink"},
+    {id:"eng",  x:556,  y:470, r:42, color:"#5fa8f5", glyph:"🔨", label:"Engineer",       chip:"sonnet · TDD"},
+    {id:"hard", x:816,  y:588, r:36, color:"#7f8ef0", glyph:"⚒️", label:"Engineer-Hard",  chip:"opus · escalation"},
+    {id:"qa",   x:1010, y:470, r:42, color:"#ffb454", glyph:"🔍", label:"QA",             chip:"sonnet · skeptic"}
+  ];
+  var svgNS = "http://www.w3.org/2000/svg";
+  var nodesG = document.getElementById("nodes");
+  var nodeEls = {};
+  NODES.forEach(function(n){
+    var g = document.createElementNS(svgNS,"g");
+    g.setAttribute("class","node"); g.dataset.id = n.id;
+    var ring = document.createElementNS(svgNS,"circle");
+    ring.setAttribute("class","ring");
+    ring.setAttribute("cx",n.x); ring.setAttribute("cy",n.y); ring.setAttribute("r",n.r+6);
+    ring.setAttribute("stroke",n.color);
+    var core = document.createElementNS(svgNS,"circle");
+    core.setAttribute("class","core");
+    core.setAttribute("cx",n.x); core.setAttribute("cy",n.y); core.setAttribute("r",n.r);
+    core.setAttribute("fill","#1e1410"); core.setAttribute("stroke",n.color);
+    var glyph = document.createElementNS(svgNS,"text");
+    glyph.setAttribute("class","glyph"); glyph.setAttribute("x",n.x); glyph.setAttribute("y",n.y+10);
+    glyph.setAttribute("text-anchor","middle"); glyph.textContent = n.glyph;
+    var label = document.createElementNS(svgNS,"text");
+    label.setAttribute("x",n.x); label.setAttribute("y",n.y+n.r+26);
+    label.setAttribute("text-anchor","middle"); label.textContent = n.label;
+    var chip = document.createElementNS(svgNS,"text");
+    chip.setAttribute("class","chip"); chip.setAttribute("x",n.x); chip.setAttribute("y",n.y+n.r+45);
+    chip.setAttribute("text-anchor","middle"); chip.textContent = n.chip;
+    g.appendChild(ring); g.appendChild(core); g.appendChild(glyph); g.appendChild(label); g.appendChild(chip);
+    nodesG.appendChild(g);
+    nodeEls[n.id] = {g:g, color:n.color, core:core};
+  });
+
+  /* ---------- steps ---------- */
+  var STEPS = [
+    {t:"The ask",          d:"You hand the orchestrator a feature. It sizes the task up.",
+     active:["you","main"], pulses:[["e-you-main",false,"#e8613c"]]},
+    {t:"Ask-first",        d:"“Use the Maple Team for this?” — nothing moves until you say yes.",
+     active:["you","main"], pulses:[["e-you-main",true,"#ffb454"],["e-you-main",false,"#e8613c"]]},
+    {t:"The plan",         d:"Architect brainstorms, then writes a numbered plan. Superpowers skills, mandatory.",
+     active:["main","arch"], pulses:[["e-main-arch",false,"#6fc48b"]]},
+    {t:"Second opinion",   d:"A gnarly trade-off in the plan? The advisor weighs in — verdict first, reasons after.",
+     active:["main","adv"], pulses:[["e-main-adv",false,"#b48ee8"],["e-main-adv",true,"#b48ee8"]]},
+    {t:"The build",        d:"Engineer executes the plan. Tests first, code second, output quoted.",
+     active:["main","eng"], pulses:[["e-main-eng",false,"#5fa8f5"]]},
+    {t:"Escalation",       d:"One subtle concurrency bug later — the heavy engineer takes over at max reasoning.",
+     active:["eng","hard"], pulses:[["e-eng-hard",false,"#7f8ef0"]]},
+    {t:"The gauntlet",     d:"QA assumes it's broken: reads the diff, runs the tests itself, checks the plan line by line.",
+     active:["main","qa"], pulses:[["e-main-qa",false,"#ffb454"]]},
+    {t:"Verdict: PASS",    d:"Evidence in hand, the orchestrator reports back. Done means proven done.",
+     active:["qa","main","you"], pulses:[["e-main-qa",true,"#ffb454"],["e-you-main",true,"#e8613c"]]}
+  ];
+
+  var capbox = document.getElementById("capbox");
+  var capstep = document.getElementById("capstep");
+  var captext = document.getElementById("captext");
+  var dotsBox = document.getElementById("dots");
+  var playBtn = document.getElementById("playBtn");
+  var pulsesG = document.getElementById("pulses");
+
+  var dots = STEPS.map(function(s,i){
+    var b = document.createElement("button");
+    b.setAttribute("role","tab");
+    b.setAttribute("aria-label","Step "+(i+1)+": "+s.t);
+    b.addEventListener("click",function(){ goTo(i); });
+    dotsBox.appendChild(b);
+    return b;
+  });
+
+  /* ---------- pulse engine ---------- */
+  var livePulses = [];
+  function firePulse(edgeId, rev, color){
+    if(reduced) return;
+    var path = document.getElementById(edgeId);
+    if(!path) return;
+    var len = path.getTotalLength();
+    var c = document.createElementNS(svgNS,"circle");
+    c.setAttribute("r","6"); c.setAttribute("fill",color);
+    c.setAttribute("class","pulse"); c.style.color = color;
+    pulsesG.appendChild(c);
+    livePulses.push({path:path,len:len,rev:rev,el:c,start:performance.now(),dur:1400});
+  }
+  function tickPulses(now){
+    for(var i=livePulses.length-1;i>=0;i--){
+      var p = livePulses[i];
+      var t = (now-p.start)/p.dur;
+      if(t>=1){ p.el.remove(); livePulses.splice(i,1); continue; }
+      var e = t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; /* easeInOutQuad */
+      var pos = p.path.getPointAtLength((p.rev?1-e:e)*p.len);
+      p.el.setAttribute("cx",pos.x); p.el.setAttribute("cy",pos.y);
+      var fade = t>.85 ? (1-t)/.15 : 1;
+      p.el.setAttribute("opacity",fade);
+    }
+    requestAnimationFrame(tickPulses);
+  }
+  if(!reduced) requestAnimationFrame(tickPulses);
+
+  /* ---------- step engine ---------- */
+  var cur = 0, playing = !reduced, stepTimer = null, pulseTimer = null;
+  var STEP_MS = 3400, PULSE_EVERY = 1500;
+
+  function render(i){
+    cur = i;
+    var s = STEPS[i];
+    capbox.classList.add("fadeout");
+    setTimeout(function(){
+      capstep.textContent = "Step "+(i+1)+" of "+STEPS.length+" — "+s.t;
+      captext.textContent = s.d;
+      capbox.classList.remove("fadeout");
+    }, reduced?0:220);
+    dots.forEach(function(d,k){ d.classList.toggle("on",k===i); });
+    Object.keys(nodeEls).forEach(function(id){
+      var on = s.active.indexOf(id)>=0;
+      nodeEls[id].g.classList.toggle("active",on && !reduced);
+      nodeEls[id].g.classList.toggle("dimmed",!on);
+      nodeEls[id].core.style.filter = on ? "drop-shadow(0 0 14px "+nodeEls[id].color+")" : "";
+    });
+    burst(s);
+    clearInterval(pulseTimer);
+    if(playing && !reduced) pulseTimer = setInterval(function(){ burst(s); }, PULSE_EVERY);
+  }
+  function burst(s){
+    s.pulses.forEach(function(p,k){
+      setTimeout(function(){ firePulse(p[0],p[1],p[2]); }, k*260);
+    });
+  }
+  function advance(){ render((cur+1)%STEPS.length); }
+  function schedule(){
+    clearInterval(stepTimer);
+    if(playing) stepTimer = setInterval(advance, STEP_MS);
+  }
+  function goTo(i){ render(i); schedule(); }
+  function setPlaying(p){
+    playing = p;
+    playBtn.textContent = p ? "❚❚" : "▶";
+    playBtn.setAttribute("aria-label", p ? "Pause simulation" : "Play simulation");
+    schedule();
+    if(!p){ clearInterval(pulseTimer); }
+    else { render(cur); }
+  }
+  playBtn.addEventListener("click",function(){ setPlaying(!playing); });
+
+  render(0); schedule();
+  if(reduced){ playing = false; playBtn.textContent = "▶"; }
+
+  /* ---------- lineage scroll reveal ---------- */
+  var inspire = document.querySelector(".inspire");
+  if(inspire && "IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ inspire.classList.add("seen"); io.disconnect(); }
+      });
+    },{threshold:.25});
+    io.observe(inspire);
+  } else if(inspire){ inspire.classList.add("seen"); }
+
+  /* ---------- falling leaves canvas ---------- */
+  var cv = document.getElementById("leaves"), ctx = cv.getContext("2d");
+  var W,H,leaves = [];
+  function resize(){
+    W = cv.width = innerWidth * devicePixelRatio;
+    H = cv.height = innerHeight * devicePixelRatio;
+    cv.style.width = innerWidth+"px"; cv.style.height = innerHeight+"px";
+  }
+  addEventListener("resize",resize); resize();
+  var N = Math.min(26, Math.floor(innerWidth/55));
+  for(var i=0;i<N;i++){
+    leaves.push({
+      x:Math.random()*W, y:Math.random()*H,
+      s:(10+Math.random()*16)*devicePixelRatio,
+      vy:(0.25+Math.random()*0.5)*devicePixelRatio,
+      vx:(Math.random()-0.5)*0.35*devicePixelRatio,
+      a:Math.random()*Math.PI*2, va:(Math.random()-0.5)*0.02,
+      o:0.14+Math.random()*0.3
+    });
+  }
+  function drawLeaf(l){
+    ctx.save();
+    ctx.translate(l.x,l.y); ctx.rotate(l.a);
+    ctx.globalAlpha = l.o;
+    ctx.font = l.s+"px serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText("🍁",0,0);
+    ctx.restore();
+  }
+  function loop(t){
+    ctx.clearRect(0,0,W,H);
+    leaves.forEach(function(l){
+      l.y += l.vy; l.x += l.vx + Math.sin(t/1600 + l.a)*0.28*devicePixelRatio;
+      l.a += l.va;
+      if(l.y > H + 40){ l.y = -40; l.x = Math.random()*W; }
+      if(l.x < -40) l.x = W+40; if(l.x > W+40) l.x = -40;
+      drawLeaf(l);
+    });
+    requestAnimationFrame(loop);
+  }
+  if(reduced){ ctx.clearRect(0,0,W,H); leaves.forEach(drawLeaf); }
+  else requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>
