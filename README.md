@@ -1,4 +1,13 @@
-# Maple Team
+# 🍁 Maple Team
+
+> 🍁 A guild of specialist Claude Code subagents. Inspired by **BOFURI** — *I Don't Want
+> Broken Code, So I'll Max Out My Defense.* Architect plans, Engineers build, QA + Security
+> guard the gate.
+
+> *"Why dodge bugs when you can just tank them?"* — Maple Team is a full-defense guild of
+> Claude Code subagents. The Architect scouts the dungeon, the Engineers grind the build, and
+> QA + Security stand as the wall no regression or CVE gets past. **Absolute Defense** for
+> your codebase.
 
 A set of specialist subagents for structured dev work in Claude Code. Each is a Markdown
 file with YAML frontmatter that Claude loads as a callable agent type.

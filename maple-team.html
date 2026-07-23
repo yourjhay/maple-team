@@ -6,7 +6,7 @@
 <title>Maple Team — How It Works</title>
 
 <!-- SEO -->
-<meta name="description" content="Maple Team — five specialist AI agents, one orchestrator. An animated walkthrough of the pipeline: architect plans, advisor weighs in, engineers build, QA breaks it on purpose. Nothing ships unproven.">
+<meta name="description" content="Maple Team — six specialist AI agents, one orchestrator. An animated walkthrough of the pipeline: architect plans, advisor weighs in, engineers build, QA breaks it and Security audits it. Nothing ships unproven.">
 <meta name="author" content="RJ Baquirin">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#120c09">
@@ -15,7 +15,7 @@
 <!-- Open Graph (Facebook / LinkedIn / Slack / Discord) -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Maple Team — How It Works">
-<meta property="og:description" content="Five specialist AI agents, one orchestrator. Watch a task travel the pipeline: plan, second opinion, build, escalate, QA verdict.">
+<meta property="og:description" content="Six specialist AI agents, one orchestrator. Watch a task travel the pipeline: plan, second opinion, build, escalate, QA verdict, security audit.">
 <meta property="og:site_name" content="Maple Team">
 <meta property="og:locale" content="en_US">
 <!-- TODO before deploy: set your real URLs -->
@@ -27,7 +27,7 @@
 <!-- Twitter / X -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Maple Team — How It Works">
-<meta name="twitter:description" content="Five specialist AI agents, one orchestrator. Animated pipeline: plan, second opinion, build, escalate, QA verdict.">
+<meta name="twitter:description" content="Six specialist AI agents, one orchestrator. Animated pipeline: plan, second opinion, build, escalate, QA verdict, security audit.">
 <!-- <meta name="twitter:image" content="https://yourdomain.com/maple-team-og.png"> -->
 
 <!-- Favicon (inline, no extra file needed) -->
@@ -40,7 +40,7 @@
     --bg:#120c09; --bg2:#19100b; --panel:#1e1410; --line:#3a2a1e;
     --ink:#f3e8da; --dim:#b8a08f; --faint:#7d685a;
     --ember:#e8613c; --amber:#ffb454;
-    --c-advisor:#b48ee8; --c-architect:#6fc48b; --c-eng:#5fa8f5; --c-hard:#7f8ef0; --c-qa:#ffb454;
+    --c-advisor:#b48ee8; --c-architect:#6fc48b; --c-eng:#5fa8f5; --c-hard:#7f8ef0; --c-qa:#ffb454; --c-sec:#e5484d;
     --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -223,9 +223,9 @@
 <div class="wrap">
 
   <header>
-    <div class="eyebrow">~/.claude/agents · five specialists · one orchestrator</div>
+    <div class="eyebrow">~/.claude/agents · six specialists · one orchestrator</div>
     <h1>Maple <span class="leaf">🍁</span> Team</h1>
-    <p class="sub">A plan is drawn, a second opinion is taken, code is built and broken on purpose — and nothing ships until QA says so. You hold the veto: the team never engages without asking first.</p>
+    <p class="sub">A plan is drawn, a second opinion is taken, code is built and broken on purpose — and nothing ships until QA and Security sign off. You hold the veto: the team never engages without asking first.</p>
   </header>
 
   <section>
@@ -240,6 +240,7 @@
         <path id="e-main-eng"  class="edge" d="M588,290 C570,350 556,390 552,428"/>
         <path id="e-eng-hard"  class="edge esc" d="M610,492 C680,530 730,552 782,568"/>
         <path id="e-main-qa"   class="edge" d="M652,262 C820,330 940,390 992,436"/>
+        <path id="e-main-sec"  class="edge" d="M660,258 C910,344 1002,470 1008,560"/>
         <!-- pulse layer -->
         <g id="pulses"></g>
         <!-- nodes injected by JS -->
@@ -248,7 +249,7 @@
       <div class="transport">
         <button id="playBtn" aria-label="Pause simulation">❚❚</button>
         <div class="capbox" id="capbox" aria-live="polite">
-          <div class="capstep" id="capstep">Step 1 of 8</div>
+          <div class="capstep" id="capstep">Step 1 of 9</div>
           <div class="captext" id="captext">…</div>
         </div>
         <div class="dots" id="dots" role="tablist" aria-label="Simulation steps"></div>
@@ -258,7 +259,7 @@
 
   <section>
     <span class="kicker">The roster</span>
-    <h2>Five dossiers</h2>
+    <h2>Six dossiers</h2>
     <div class="grid">
       <div class="card" style="--ac:var(--c-architect); --glow:var(--c-architect)">
         <div class="sigil">📐</div>
@@ -310,6 +311,16 @@
         <p>Assumes it's broken until evidence says otherwise. Reads the diff, runs the tests itself, checks every plan requirement. Verdict: PASS / FAIL / PASS-WITH-NITS.</p>
         <div class="tools">Read · Grep · Glob · Bash · browser tools on request</div>
       </div>
+      <div class="card" style="--ac:var(--c-sec); --glow:var(--c-sec)">
+        <div class="sigil">🛡️</div>
+        <h3>maple-security</h3>
+        <div class="badges">
+          <span class="badge model">Opus 4.8 · ultrathink</span>
+          <span class="badge">read-only critic</span>
+        </div>
+        <p>Attacks the change before an attacker does. Docs-first, tech-stack agnostic, OWASP Top 10 as the floor — authz, injection, secrets, money integrity. Defensive only: finds holes, never weaponizes them.</p>
+        <div class="tools">Read · Grep · Glob · Bash · audit-guide playbook</div>
+      </div>
     </div>
   </section>
 
@@ -342,8 +353,8 @@
       preparation and one stubborn principle: <strong>refuse to take damage.</strong>
     </p>
     <p class="lore">
-      Same philosophy here. A small roster of extreme specialists, and QA as the maxed-out defense —
-      nothing ships that can hurt you.
+      Same philosophy here. A small roster of extreme specialists, with QA and Security as the maxed-out
+      defense — bugs and exploits both bounce off the wall. Nothing ships that can hurt you.
     </p>
     <img class="maple-chan" src="maple-render.png" alt="Maple from BOFURI in her black armor, shield at her side, reaching out with a smile" width="395" height="520">
   </section>
@@ -364,7 +375,8 @@
     {id:"arch", x:216,  y:470, r:42, color:"#6fc48b", glyph:"📐", label:"Architect",      chip:"opus · ultrathink"},
     {id:"eng",  x:556,  y:470, r:42, color:"#5fa8f5", glyph:"🔨", label:"Engineer",       chip:"sonnet · TDD"},
     {id:"hard", x:816,  y:588, r:36, color:"#7f8ef0", glyph:"⚒️", label:"Engineer-Hard",  chip:"opus · escalation"},
-    {id:"qa",   x:1010, y:470, r:42, color:"#ffb454", glyph:"🔍", label:"QA",             chip:"sonnet · skeptic"}
+    {id:"qa",   x:1010, y:470, r:42, color:"#ffb454", glyph:"🔍", label:"QA",             chip:"sonnet · skeptic"},
+    {id:"sec",  x:1010, y:600, r:36, color:"#e5484d", glyph:"🛡️", label:"Security",       chip:"opus · audit"}
   ];
   var svgNS = "http://www.w3.org/2000/svg";
   var nodesG = document.getElementById("nodes");
@@ -410,8 +422,10 @@
      active:["eng","hard"], pulses:[["e-eng-hard",false,"#7f8ef0"]]},
     {t:"The gauntlet",     d:"QA assumes it's broken: reads the diff, runs the tests itself, checks the plan line by line.",
      active:["main","qa"], pulses:[["e-main-qa",false,"#ffb454"]]},
-    {t:"Verdict: PASS",    d:"Evidence in hand, the orchestrator reports back. Done means proven done.",
-     active:["qa","main","you"], pulses:[["e-main-qa",true,"#ffb454"],["e-you-main",true,"#e8613c"]]}
+    {t:"The audit",        d:"In parallel, Security attacks the diff — OWASP Top 10, authz, injection, secrets. Defensive only; nothing gets weaponized.",
+     active:["main","sec"], pulses:[["e-main-sec",false,"#e5484d"],["e-main-sec",true,"#e5484d"]]},
+    {t:"Verdict: PASS",    d:"Evidence in hand — tests green, no holes — the orchestrator reports back. Done means proven done.",
+     active:["qa","sec","main","you"], pulses:[["e-main-qa",true,"#ffb454"],["e-main-sec",true,"#e5484d"],["e-you-main",true,"#e8613c"]]}
   ];
 
   var capbox = document.getElementById("capbox");
