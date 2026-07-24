@@ -97,7 +97,9 @@ for f in "$SRC_DIR"/maple-*.md; do
   if [ "$MODE" = "link" ]; then
     run "ln -sfn '$f' '$target'"
   else
-    run "cp -f '$f' '$target'"
+    # remove first: cp -f onto a symlink pointing back at the repo source fails
+    # ("are identical") and set -e would abort the install mid-loop
+    run "rm -f '$target' && cp -f '$f' '$target'"
   fi
 done
 
