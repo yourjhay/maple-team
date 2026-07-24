@@ -125,16 +125,17 @@ if [ "$SCOPE" = "project" ]; then
   if [ -n "$PROJECT_DIR" ]; then
     resolve_project_dir "$PROJECT_DIR" || { echo "Error: invalid project path: $PROJECT_DIR" >&2; exit 1; }
   elif [ -t 0 ]; then
-    while :; do
-      printf 'Full path to the project repo [%s]: ' "$PWD"
-      read -r p || p=""
-      [ -z "$p" ] && p="$PWD"
-      if resolve_project_dir "$p"; then break; fi
-      say "  try again, or press Ctrl-C to abort."
-    done
+    printf 'Full path to the project repo (required): '
+    read -r p || p=""
+    if [ -z "$p" ]; then
+      echo "Error: a project repo path is required. Re-run and provide one, or use --project /path/to/repo." >&2
+      exit 1
+    fi
+    resolve_project_dir "$p" || exit 1
     say ""
   else
-    resolve_project_dir "$PWD" || { echo "Error: --project needs a valid repo path (none given, stdin not a TTY)" >&2; exit 1; }
+    echo "Error: --project needs a repo path (none given, stdin not a TTY). Use --project /path/to/repo." >&2
+    exit 1
   fi
 
   # Guard: installing into the maple-team repo itself is almost never intended.
