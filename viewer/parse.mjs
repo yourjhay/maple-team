@@ -170,10 +170,20 @@ export function parseSession(idOrPath, projectsRoot) {
   }
 
   // --- main thread --------------------------------------------------------
+  // A subagent has actually RETURNED only when the main thread records a
+  // tool_result for its spawning tool_use id. Collect those so we don't mark a
+  // still-running subagent as done (which would freeze its node mid-work).
+  const resultAt = new Map();    // toolUseId -> completion timestamp
   const main = readJsonl(mainPath);
   let started = false;
   for (const e of main) {
     const t = e.timestamp || "";
+    const msg = e.message;
+    if (msg && typeof msg === "object" && Array.isArray(msg.content)) {
+      for (const b of msg.content) {
+        if (b && b.type === "tool_result" && b.tool_use_id) resultAt.set(b.tool_use_id, t);
+      }
+    }
     if (!started && (e.type === "user" || e.type === "assistant")) {
       events.push({ t, kind: "run_start", agent: "orchestrator", agentType: "orchestrator" });
       started = true;
@@ -197,12 +207,10 @@ export function parseSession(idOrPath, projectsRoot) {
   }
 
   // --- each subagent's own activity --------------------------------------
-  for (const sub of byToolUse.values()) {
+  for (const [toolUseId, sub] of byToolUse) {
     const rows = readJsonl(sub.jsonl);
-    let lastT = "";
     for (const e of rows) {
       const t = e.timestamp || "";
-      if (t) lastT = t;
       for (const b of toolBlocks(e)) {
         events.push({
           t, kind: "agent_tool", agent: sub.agentType, agentType: sub.agentType,
@@ -210,7 +218,10 @@ export function parseSession(idOrPath, projectsRoot) {
         });
       }
     }
-    events.push({ t: lastT, kind: "agent_result", agent: sub.agentType, agentType: sub.agentType });
+    // Emit "returned" ONLY if the main thread actually recorded the result.
+    // Still-running subagents get no result event, so their node stays active.
+    const doneT = resultAt.get(toolUseId);
+    if (doneT) events.push({ t: doneT, kind: "agent_result", agent: sub.agentType, agentType: sub.agentType });
   }
 
   // --- order + number -----------------------------------------------------
