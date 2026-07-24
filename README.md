@@ -20,11 +20,13 @@ file with YAML frontmatter that Claude loads as a callable agent type.
 | `maple-architect` | opus | Brainstorm + spec + written plan before any code. Read-only. |
 | `maple-engineer` | sonnet | Execute the plan, write code. Default engineer. |
 | `maple-engineer-hard` | opus | Same, for gnarly / high-stakes / subtle work. Escalate here. |
-| `maple-qa` | sonnet | Review output (code + visual) against the plan. Read-only critic. |
+| `maple-qa` | sonnet | Review output (code + visual/E2E via Playwright) against the plan, per the QA rules protocol. PASS / CONDITIONAL PASS / FAIL; persists reports to `docs/qa-reports/`. Read-only on code. |
 | `maple-security` | opus | Adversarial security audit (OWASP Top 10 + more). Read-only critic. |
 
-`maple-security-audit-guide.md` is not an agent — it's the authoritative playbook the
-security agent reads first (operating modes, checklist, severity rubric, output format).
+`maple-security-audit-guide.md` and `maple-qa-rules-guide.md` are not agents — they're the
+authoritative playbooks the security and QA agents read first (operating modes, checklists,
+severity rubrics, output formats). The QA guide is adapted from
+[oh-my-agent QA_RULES v2](https://github.com/yourjhay/oh-my-agent/blob/main/rules/QA_RULES.md).
 
 ## Install
 
@@ -38,16 +40,24 @@ security agent reads first (operating modes, checklist, severity rubric, output 
 
 Restart / reload Claude Code afterward so it picks up the new agent types.
 
-The installer rewrites the audit-guide path inside `maple-security.md` to match wherever it
-installed the guide, so a `--dest` install stays self-consistent.
+The installer rewrites the guide paths inside `maple-security.md` and `maple-qa.md` to match
+wherever it installed the guides, so a `--dest` install stays self-consistent.
 
 ## Flow (once activated)
 
 1. `maple-architect` → spec + plan (consult `maple-advisor` on hard trade-offs).
-2. `maple-engineer` executes → escalate to `maple-engineer-hard` if genuinely hard.
-3. `maple-qa` (correctness) and `maple-security` (vulnerabilities) review vs the plan before
+2. **Isolate** — create + enter a git worktree for the task before any code is written
+   (`EnterWorktree` tool or `superpowers:using-git-worktrees`). All subsequent team work —
+   engineer edits, QA, security — runs inside it; subagents inherit the main thread's cwd.
+   Engineers hard-refuse to edit the main working copy.
+3. `maple-engineer` executes → escalate to `maple-engineer-hard` if genuinely hard.
+4. `maple-qa` (correctness) and `maple-security` (vulnerabilities) review vs the plan before
    anything is called done — dispatch both in parallel on the same diff. If fixes change the
    diff, re-run `maple-security` on the final code.
+5. Only after both pass: **stop and ask the user's permission before merging back** — show
+   the branch, a diff summary, and both verdicts. Never merge, rebase, or push to the base
+   branch without an explicit yes. On yes → `superpowers:finishing-a-development-branch`,
+   then remove the worktree. No answer = work stays on its branch in the worktree.
 
 ## Activation — ask first, never auto-route
 
@@ -60,8 +70,10 @@ only after a yes. Trivial tasks: handle solo.
   passes context (the plan, the diff) between agents.
 - An agent's model is fixed at spawn. To change model, route to a different agent
   (`maple-engineer` → `maple-engineer-hard`).
-- `maple-qa` needs browser tools (`mcp__claude-in-chrome__*` or Playwright) granted for
-  visual review; it will ask when needed.
+- `maple-qa` bundles Playwright browser tools (`mcp__plugin_playwright_playwright__*` — needs
+  the `playwright` Claude Code plugin installed) for visual/E2E review. It is round-aware via
+  `docs/qa-reports/`, and cannot ask questions mid-run — relay its "Clarifications Needed"
+  section to the user.
 
 ## CLAUDE.md
 

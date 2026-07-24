@@ -44,7 +44,11 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-GUIDE_NAME="maple-security-audit-guide.md"
+# agent:guide pairs — each agent references its guide by absolute path
+GUIDE_PAIRS=(
+  "maple-security.md:maple-security-audit-guide.md"
+  "maple-qa.md:maple-qa-rules-guide.md"
+)
 
 say()  { printf '%s\n' "$*"; }
 run()  { if [ "$DRY_RUN" -eq 1 ]; then say "  [dry-run] $*"; else eval "$*"; fi; }
@@ -97,23 +101,28 @@ for f in "$SRC_DIR"/maple-*.md; do
   fi
 done
 
-# --- rewrite the guide path inside maple-security.md -------------------------
-# The security agent points at the audit guide by absolute path. Make that
-# reference match wherever we just installed the guide (skip when symlinked —
-# the file is shared with the repo copy and shouldn't be rewritten in place).
-GUIDE_PATH="$DEST/$GUIDE_NAME"
-SEC="$DEST/maple-security.md"
-if [ "$MODE" = "copy" ] && [ -f "$SEC" ]; then
-  if [ "$DRY_RUN" -eq 1 ]; then
-    say ""
-    say "  [dry-run] would point maple-security.md guide ref at: $GUIDE_PATH"
-  else
-    # replace any `...maple-security-audit-guide.md` backtick-wrapped path
-    tmp="$(mktemp)"
-    sed -E "s#\`[^\`]*${GUIDE_NAME}\`#\`${GUIDE_PATH}\`#g" "$SEC" > "$tmp" && mv "$tmp" "$SEC"
-    say ""
-    say "  linked maple-security.md → $GUIDE_PATH"
-  fi
+# --- rewrite guide paths inside the agents that reference one ----------------
+# Some agents point at a companion guide by absolute path. Make each reference
+# match wherever we just installed the guide (skip when symlinked — the file is
+# shared with the repo copy and shouldn't be rewritten in place).
+if [ "$MODE" = "copy" ]; then
+  for pair in "${GUIDE_PAIRS[@]}"; do
+    agent_name="${pair%%:*}"
+    guide_name="${pair##*:}"
+    agent_path="$DEST/$agent_name"
+    guide_path="$DEST/$guide_name"
+    [ -f "$agent_path" ] || continue
+    if [ "$DRY_RUN" -eq 1 ]; then
+      say ""
+      say "  [dry-run] would point $agent_name guide ref at: $guide_path"
+    else
+      # replace any `...<guide_name>` backtick-wrapped path
+      tmp="$(mktemp)"
+      sed -E "s#\`[^\`]*${guide_name}\`#\`${guide_path}\`#g" "$agent_path" > "$tmp" && mv "$tmp" "$agent_path"
+      say ""
+      say "  linked $agent_name → $guide_path"
+    fi
+  done
 fi
 
 say ""
