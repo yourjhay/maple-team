@@ -106,7 +106,7 @@ if [ -z "$SCOPE" ]; then
   if [ -t 0 ]; then
     say "Install Maple Team as:"
     say "  [1] User     ~/.claude/agents   — personal, available in all your projects"
-    say "  [2] Project  ./.claude/agents   — checked into this repo, shared with your team"
+    say "  [2] Project  <repo>/.claude/agents  — checked into your specified repo, shared with your team"
     printf 'Choose [1/2] (default 1): '
     read -r ans || ans=""
     case "$ans" in
