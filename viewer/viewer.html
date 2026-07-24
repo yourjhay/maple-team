@@ -32,6 +32,8 @@
   button:focus-visible, select:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
   button.primary{background:var(--ember); border-color:var(--ember); color:#fff}
   button.primary:hover{background:#f47450; color:#fff}
+  #livebtn.on{background:var(--fail); border-color:var(--fail); color:#fff; animation:livepulse 1.6s ease-in-out infinite}
+  @keyframes livepulse{0%,100%{opacity:1}50%{opacity:.6}}
   .meta{font-family:var(--mono); font-size:12px; color:var(--faint)}
 
   .stage{
@@ -110,6 +112,7 @@
       <button id="play" class="primary" aria-label="Play">▶</button>
       <button id="restart" title="Restart">⟲</button>
       <button id="speed" title="Playback speed">1×</button>
+      <button id="livebtn" title="Follow the running session live">● Live</button>
       <input id="scrub" type="range" min="0" max="0" value="0" aria-label="Timeline">
       <span class="count" id="count">— / —</span>
       <div class="cap" id="cap"></div>
@@ -279,10 +282,37 @@ function play(){ if(!EVENTS.length) return; if(idx>=EVENTS.length-1) seek(-1); p
 function stop(){ playing=false; el("play").textContent="▶"; clearInterval(timer); }
 function schedule(){ clearInterval(timer); if(playing) timer=setInterval(step, BASE_MS/SPEEDS[speedI]); }
 
-el("play").addEventListener("click", ()=> playing?stop():play());
-el("restart").addEventListener("click", ()=>{ stop(); seek(-1); });
+el("play").addEventListener("click", ()=>{ liveOff(); playing?stop():play(); });
+el("restart").addEventListener("click", ()=>{ liveOff(); stop(); seek(-1); });
 el("speed").addEventListener("click", ()=>{ speedI=(speedI+1)%SPEEDS.length; el("speed").textContent=SPEEDS[speedI]+"×"; if(playing) schedule(); });
-scrub.addEventListener("input", ()=>{ stop(); seek(parseInt(scrub.value,10)); });
+scrub.addEventListener("input", ()=>{ liveOff(); stop(); seek(parseInt(scrub.value,10)); });
+
+// ---- live: follow the running session ----
+let live=false, es=null, liveTimer=null, firstSnap=true;
+function liveChase(){ if(live && idx<EVENTS.length-1) step(); }
+function liveOn(){
+  stop(); live=true; firstSnap=true; el("livebtn").classList.add("on");
+  el("runsel").disabled=true;
+  EVENTS=[]; seek(-1); ticker.innerHTML='<span class="empty">Waiting for the running session…</span>';
+  es = new EventSource("/events");
+  es.onmessage = (m)=>{
+    let d; try{ d=JSON.parse(m.data); }catch{ return; }
+    if(d.type==="run"){ EVENTS=[]; firstSnap=true; seek(-1); cap.textContent=`live · ${d.title||d.id}`; }
+    else if(d.type==="snapshot"){
+      EVENTS = d.events||[]; scrub.max=Math.max(0,EVENTS.length-1);
+      if(firstSnap){ seek(EVENTS.length-1); firstSnap=false; cap.textContent=`live · ${d.title||d.id} — caught up`; }
+      // otherwise the chase stepper animates newly-appended events
+    }
+  };
+  es.onerror = ()=>{ cap.textContent="live: connection lost"; };
+  liveTimer = setInterval(liveChase, 480);
+}
+function liveOff(){
+  if(!live) return;
+  live=false; el("livebtn").classList.remove("on"); el("runsel").disabled=false;
+  if(es){ es.close(); es=null; } clearInterval(liveTimer);
+}
+el("livebtn").addEventListener("click", ()=> live?liveOff():liveOn());
 
 // ---- data ----
 async function loadRuns(){
@@ -309,7 +339,7 @@ async function loadRun(id){
     ticker.innerHTML = '<span class="empty">Press ▶ to replay.</span>';
   }catch(err){ cap.textContent = String(err); }
 }
-el("runsel").addEventListener("change", (e)=> loadRun(e.target.value));
+el("runsel").addEventListener("change", (e)=>{ liveOff(); loadRun(e.target.value); });
 el("reload").addEventListener("click", loadRuns);
 loadRuns();
 </script>

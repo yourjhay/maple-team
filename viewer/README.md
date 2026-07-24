@@ -49,8 +49,11 @@ so spawns can be ordered and every tool call attributed to the right agent.
 ## Status
 
 - **Replay** (done) — pick any past run and play it back.
-- **Live** (next) — tail the newest transcript and stream events over SSE so the
-  diagram lights up while the team is actually working.
+- **Live** (done) — click **● Live** to follow the running session. The server tails
+  the newest transcript for the project and pushes a fresh snapshot over SSE
+  (`/events`) on every write; the client jumps to the current state, then animates
+  each new event as the team works. Snapshot-per-change (rather than a sequence diff)
+  keeps it correct when subagent files interleave by timestamp.
 
 ## Notes
 

@@ -21,7 +21,7 @@ function arg(name, def) {
 }
 const PORT = parseInt(arg("--port", process.env.PORT || "4757"), 10);
 const PROJECT = arg("--project", process.cwd());
-const PROJECTS_ROOT = join(process.env.HOME, ".claude", "projects");
+const PROJECTS_ROOT = arg("--root", join(process.env.HOME, ".claude", "projects"));
 const SAMPLE = join(here, "fixtures", "maple-sample.json");
 
 const MIME = { ".html": "text/html; charset=utf-8", ".mjs": "text/javascript", ".js": "text/javascript", ".json": "application/json" };
@@ -65,6 +65,40 @@ const server = createServer((req, res) => {
       if (!match) return sendJSON(res, { error: `run not found: ${id}` }, 404);
       const parsed = parseSession(match.path, PROJECTS_ROOT);
       return sendJSON(res, parsed);
+    }
+
+    if (p === "/events") {
+      res.writeHead(200, {
+        "content-type": "text/event-stream",
+        "cache-control": "no-cache",
+        "connection": "keep-alive",
+      });
+      res.write(": connected\n\n");
+      const send = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
+      const wanted = url.searchParams.get("run");   // optional pin to one run
+      let lastRunId = null, lastMtime = -1;
+
+      const tick = () => {
+        let runs;
+        try { runs = listRuns(PROJECT, PROJECTS_ROOT); } catch { return; }
+        const run = wanted ? runs.find(r => r.id === wanted) : runs[0];
+        if (!run) return;
+        if (run.id !== lastRunId) {            // active run changed → reset client
+          lastRunId = run.id; lastMtime = -1;
+          send({ type: "run", id: run.id, title: run.title });
+        }
+        if (run.mtime === lastMtime) return;   // no new writes since last snapshot
+        lastMtime = run.mtime;
+        let parsed;
+        try { parsed = parseSession(run.path, PROJECTS_ROOT); } catch { return; }
+        send({ type: "snapshot", id: parsed.id, title: parsed.title, isMapleRun: parsed.isMapleRun, events: parsed.events });
+      };
+
+      const iv = setInterval(tick, 1000);
+      const ka = setInterval(() => res.write(": ka\n\n"), 15000);
+      tick();
+      req.on("close", () => { clearInterval(iv); clearInterval(ka); });
+      return;
     }
 
     res.writeHead(404); res.end("not found");
