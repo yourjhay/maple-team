@@ -97,6 +97,23 @@ function fieldFromJsonl(path, field, { last = false } = {}) {
   return found;
 }
 
+// Freshness signal for live polling: newest mtime across the main transcript
+// AND its subagent files. The main file does NOT change while a subagent is
+// working (it writes to <session>/subagents/agent-*.jsonl), so watching only
+// the main mtime freezes the view mid-agent.
+export function sessionMtime(mainPath) {
+  let m = 0;
+  try { m = statSync(mainPath).mtimeMs; } catch { /* ignore */ }
+  const id = basename(mainPath).replace(/\.jsonl$/, "");
+  const subDir = join(dirname(mainPath), id, "subagents");
+  try {
+    for (const f of readdirSync(subDir)) {
+      try { m = Math.max(m, statSync(join(subDir, f)).mtimeMs); } catch { /* ignore */ }
+    }
+  } catch { /* no subagents dir yet */ }
+  return m;
+}
+
 // Light metadata for a run listing (no event parsing).
 export function sessionSummary(mainPath) {
   const id = basename(mainPath).replace(/\.jsonl$/, "");

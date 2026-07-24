@@ -213,15 +213,19 @@ function applyState(upto){
   }
   let active = upto>=0 ? nodeOf(EVENTS[upto].agentType) : null;
   if(upto>=0 && EVENTS[upto].kind==="run_start") active="you";   // light You on the prompt
+  const curActive = (upto>=0 && EVENTS[upto].kind!=="agent_result") ? active : null;
   for(const n of NODES){
     const s = st[n.id];
+    // the current event's node pulses; the orchestrator also keeps pulsing
+    // whenever we're following a live run (it's always coordinating).
+    const isActive = n.id===curActive || (live && n.id==="main" && upto>=0);
     const cls = ["node"];
-    if(n.id===active && EVENTS[upto] && EVENTS[upto].kind!=="agent_result") cls.push("active");
-    if(s==="done") cls.push("done");
+    if(isActive) cls.push("active");
+    else if(s==="done") cls.push("done");
     else if(s==="seen") cls.push("seen");
-    else if(n.id!==active) cls.push("idle");
+    else cls.push("idle");
     nodeEls[n.id].g.setAttribute("class", cls.join(" "));
-    nodeEls[n.id].core.style.filter = (n.id===active) ? `drop-shadow(0 0 14px ${nodeEls[n.id].color})` : "";
+    nodeEls[n.id].core.style.filter = isActive ? `drop-shadow(0 0 14px ${nodeEls[n.id].color})` : "";
     nodeEls[n.id].badge.textContent = s==="done" ? "✓" : "";
   }
 }

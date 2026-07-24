@@ -11,7 +11,7 @@ import { createServer } from "node:http";
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname, extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseSession, listRuns } from "./parse.mjs";
+import { parseSession, listRuns, sessionMtime } from "./parse.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -94,8 +94,9 @@ const server = createServer((req, res) => {
           lastRunId = run.id; lastMtime = -1;
           send({ type: "run", id: run.id, title: run.title });
         }
-        if (run.mtime === lastMtime) return;   // no new writes since last snapshot
-        lastMtime = run.mtime;
+        const mt = sessionMtime(run.path);     // includes subagent files, not just main
+        if (mt === lastMtime) return;          // no new writes since last snapshot
+        lastMtime = mt;
         let parsed;
         try { parsed = parseSession(run.path, PROJECTS_ROOT); } catch { return; }
         send({ type: "snapshot", id: parsed.id, title: parsed.title, isMapleRun: parsed.isMapleRun, events: parsed.events });
