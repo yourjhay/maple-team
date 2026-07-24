@@ -30,18 +30,29 @@ severity rubrics, output formats). The QA guide is adapted from
 
 ## Install
 
+Run `./install.sh` and it asks how to install:
+
+- **User** (`~/.claude/agents`) — personal, available in all your projects.
+- **Project** (`<repo>/.claude/agents`) — checked into a specific repo so your team shares
+  the agents via version control. It prompts for the repo path and validates it (must exist;
+  warns if it isn't a git repo).
+
 ```bash
-./install.sh                 # copy agents into ~/.claude/agents
-./install.sh --link          # symlink instead (repo edits propagate live)
-./install.sh --dest DIR      # custom agents dir
+./install.sh                 # ask user-vs-project, then copy the agents
+./install.sh --user          # user install (~/.claude/agents)
+./install.sh --project [DIR] # project install into DIR/.claude/agents (prompts + validates if DIR omitted)
+./install.sh --dest DIR      # custom agents dir (user-style absolute paths)
+./install.sh --link          # symlink instead of copy (local dev only — don't commit symlinks)
 ./install.sh --dry-run       # preview, change nothing
 ./install.sh --uninstall     # remove installed maple-* files
 ```
 
 Restart / reload Claude Code afterward so it picks up the new agent types.
 
-The installer rewrites the guide paths inside `maple-security.md` and `maple-qa.md` to match
-wherever it installed the guides, so a `--dest` install stays self-consistent.
+The installer rewrites the guide-playbook paths inside `maple-security.md` and `maple-qa.md`
+to match where it installed the guides. A **project** install writes them as repo-relative
+paths (`.claude/agents/…`) so they stay valid when committed and cloned to a teammate's
+machine; a **user**/`--dest` install writes absolute paths.
 
 ## Flow (once activated)
 
@@ -77,6 +88,7 @@ only after a yes. Trivial tasks: handle solo.
 
 ## CLAUDE.md
 
-`CLAUDE-maple-team.md` holds the team block to drop into your global or project
-`CLAUDE.md` (e.g. `~/.claude/CLAUDE.md`) so Claude knows the team exists and how to route.
-The installer does not touch `CLAUDE.md` — paste it in yourself to avoid duplicates.
+`CLAUDE-maple-team.md` holds the team block to drop into your `CLAUDE.md` so Claude knows the
+team exists and how to route — `~/.claude/CLAUDE.md` for a user install, the repo's
+`./CLAUDE.md` for a project install. The installer does not touch `CLAUDE.md` — paste it in
+yourself to avoid duplicates.

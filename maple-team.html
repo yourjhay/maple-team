@@ -438,12 +438,12 @@
           <p>Needs <code>bash</code> and <code>git</code>. Nothing else — the agents are plain markdown.</p>
         </li>
         <li>
-          <h3>Run the installer</h3>
-          <p>Copies the six <code>maple-*</code> agents and their guide playbooks into <code>~/.claude/agents</code>, then rewrites each guide path so it stays self-consistent.</p>
+          <h3>Run the installer — pick a scope</h3>
+          <p>It asks: <b>User</b> (<code>~/.claude/agents</code>, personal, every project) or <b>Project</b> (<code>&lt;repo&gt;/.claude/agents</code>, checked into one repo and shared with your team). Project prompts for the repo path and validates it. Either way it copies the six <code>maple-*</code> agents and their guide playbooks, then rewrites each guide path to suit the scope.</p>
         </li>
         <li>
           <h3>Wire up <code>CLAUDE.md</code></h3>
-          <p>Paste the block from <code>CLAUDE-maple-team.md</code> into your global or project <code>CLAUDE.md</code> so Claude knows the team exists and how to route. The installer leaves <code>CLAUDE.md</code> alone on purpose — no duplicates.</p>
+          <p>Paste the block from <code>CLAUDE-maple-team.md</code> into your <code>CLAUDE.md</code> — <code>~/.claude/CLAUDE.md</code> for a user install, the repo's <code>./CLAUDE.md</code> for a project install — so Claude knows the team exists and how to route. The installer leaves <code>CLAUDE.md</code> alone on purpose — no duplicates.</p>
         </li>
         <li>
           <h3>Restart Claude Code</h3>
@@ -460,18 +460,24 @@
 <span class="p">$</span> <span class="c">git clone https://github.com/yourjhay/maple-team.git</span>
 <span class="p">$</span> <span class="c">cd maple-team</span>
 
-<span class="m"># 2 · install into ~/.claude/agents</span>
+<span class="m"># 2 · install — it asks user vs project</span>
 <span class="p">$</span> <span class="c">./install.sh</span>
+<span class="m">  Install Maple Team as:</span>
+<span class="m">    [1] User     ~/.claude/agents</span>
+<span class="m">    [2] Project  ./.claude/agents</span>
+<span class="m">  Choose [1/2]:</span>
 
-<span class="m"># 3 · then paste CLAUDE-maple-team.md</span>
-<span class="m">#     into ~/.claude/CLAUDE.md, and restart.</span></pre>
+<span class="m"># 3 · paste CLAUDE-maple-team.md into</span>
+<span class="m">#     your CLAUDE.md, then restart.</span></pre>
       </div>
     </div>
 
     <div class="flags">
-      <div class="row"><code>./install.sh</code><span>Copy the agents into <code>~/.claude/agents</code> (the default).</span></div>
-      <div class="row"><code>./install.sh --link</code><span>Symlink instead, so edits in the repo propagate live.</span></div>
+      <div class="row"><code>./install.sh</code><span>Ask user-vs-project, then copy the agents in.</span></div>
+      <div class="row"><code>./install.sh --user</code><span>User install — <code>~/.claude/agents</code>, every project.</span></div>
+      <div class="row"><code>./install.sh --project [DIR]</code><span>Project install into <code>DIR/.claude/agents</code>; prompts for and validates the repo path if <code>DIR</code> is omitted.</span></div>
       <div class="row"><code>./install.sh --dest DIR</code><span>Install into a custom agents directory.</span></div>
+      <div class="row"><code>./install.sh --link</code><span>Symlink instead of copy — local dev only, don't commit symlinks.</span></div>
       <div class="row"><code>./install.sh --dry-run</code><span>Preview every change without touching a thing.</span></div>
       <div class="row"><code>./install.sh --uninstall</code><span>Remove the installed <code>maple-*</code> files.</span></div>
     </div>
@@ -715,7 +721,11 @@
     btn.addEventListener("click",function(){
       var src = document.getElementById(btn.dataset.copy);
       if(!src) return;
-      var text = src.innerText.replace(/^\$ /gm,"").replace(/^# .*$/gm,"").replace(/\n{2,}/g,"\n").trim();
+      /* copy only the actual command lines ($-prefixed); skip comments & sample output */
+      var text = src.innerText.split("\n")
+        .filter(function(l){ return /^\$\s/.test(l); })
+        .map(function(l){ return l.replace(/^\$\s/,""); })
+        .join("\n").trim();
       navigator.clipboard.writeText(text).then(function(){
         var old = btn.textContent;
         btn.textContent = "Copied ✓"; btn.classList.add("done");
