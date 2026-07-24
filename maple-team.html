@@ -274,6 +274,24 @@
   }
   .note b{color:var(--ember)}
 
+  /* ---------- viewer callout ---------- */
+  .viewer-cta{
+    margin-top:22px; padding:20px 24px; border-radius:16px;
+    background:var(--bg2); border:1px solid var(--line);
+    display:flex; flex-wrap:wrap; gap:10px 14px; align-items:baseline;
+  }
+  .viewer-cta p{margin:0; color:var(--dim); font-size:15px; flex-basis:100%}
+  .viewer-cta p b{font-family:var(--serif); color:var(--amber); font-weight:600; font-size:16px}
+  .viewer-cta code{
+    font-family:var(--mono); font-size:13px; color:var(--amber);
+    background:color-mix(in srgb, var(--amber) 10%, transparent); padding:4px 10px; border-radius:6px;
+  }
+  .viewer-cta .arrow{color:var(--faint); font-family:var(--mono)}
+  .viewer-cta .small{flex-basis:100%; font-size:13px; color:var(--faint); margin-top:2px}
+  .viewer-cta .small a{color:var(--ink); text-decoration:none; border-bottom:1px solid var(--ember)}
+  .viewer-cta .small a:hover{color:var(--ember)}
+  .viewer-cta .live{color:var(--fail); font-weight:600}
+
   /* ---------- repo link ---------- */
   .repo{
     display:inline-flex; align-items:center; gap:9px; margin-top:30px;
@@ -339,6 +357,15 @@
         </div>
         <div class="dots" id="dots" role="tablist" aria-label="Simulation steps"></div>
       </div>
+    </div>
+
+    <div class="viewer-cta">
+      <p><b>This one's scripted — watch your real runs.</b> The viewer reads Claude Code's own session transcripts and drives this exact diagram: replay any past run, or hit <span class="live">● Live</span> to follow the team as it works.</p>
+      <code>cd viewer</code>
+      <code>npm run viewer</code>
+      <span class="arrow">→</span>
+      <code>http://127.0.0.1:4757</code>
+      <p class="small">Dependency-free — plain Node, no install step. See <a href="https://github.com/yourjhay/maple-team/tree/main/viewer" target="_blank" rel="noopener">viewer/</a> for how it works.</p>
     </div>
   </section>
 
