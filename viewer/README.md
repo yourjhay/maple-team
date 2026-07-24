@@ -11,17 +11,31 @@ Maple-branded take that drives the existing 8-node diagram.
 
 ```bash
 cd viewer
-node fixtures/build-sample.mjs      # once, to generate the demo run
-npm run viewer                      # or: node server.mjs --project /path/to/repo
+node fixtures/build-sample.mjs                       # once, to generate the demo run
+
+node server.mjs                                      # watch THIS repo's runs
+node server.mjs --project /path/to/your/repo         # watch another project's runs
 # → http://127.0.0.1:4757
 ```
 
-Pick a run from the dropdown (the built-in **Sample maple run** is always there),
-then press ▶. Scrub the timeline, change speed, restart. The activity ticker below
-logs every tool call per agent.
+**Which project?** The viewer follows the Claude Code session whose working
+directory is `--project`. If you're running the team in a different repo (say
+`~/web/sample-portfolio`), point the viewer there:
 
-Flags: `--port N` (default 4757), `--project DIR` (which repo's runs to list;
-defaults to the current directory).
+```bash
+node server.mjs --project ~/web/sample-portfolio
+```
+
+Without `--project` it defaults to this repo (the viewer's parent dir), **not** the
+directory you launched from — so `npm run viewer` alone watches maple-team's own runs.
+If no session matches, the viewer says so ("no runs found in …") instead of sitting blank.
+
+Pick a run from the dropdown (the built-in **Sample maple run** is always there),
+then press ▶ — or hit **● Live** to follow the running session. Scrub the timeline,
+change speed, restart. The activity ticker logs every tool call per agent.
+
+Flags: `--port N` (default 4757), `--project DIR` (repo whose runs to show; defaults to
+this repo), `--root DIR` (transcripts dir; defaults to `~/.claude/projects`).
 
 ## How it works
 

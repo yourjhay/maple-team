@@ -362,10 +362,10 @@
     <div class="viewer-cta">
       <p><b>This one's scripted — watch your real runs.</b> The viewer reads Claude Code's own session transcripts and drives this exact diagram: replay any past run, or hit <span class="live">● Live</span> to follow the team as it works.</p>
       <code>cd viewer</code>
-      <code>npm run viewer</code>
+      <code>node server.mjs --project /path/to/your/repo</code>
       <span class="arrow">→</span>
       <code>http://127.0.0.1:4757</code>
-      <p class="small">Dependency-free — plain Node, no install step. See <a href="https://github.com/yourjhay/maple-team/tree/main/viewer" target="_blank" rel="noopener">viewer/</a> for how it works.</p>
+      <p class="small">Point <code>--project</code> at the repo you're running the team in (omit it to watch maple-team's own runs). Dependency-free — plain Node, no install step. See <a href="https://github.com/yourjhay/maple-team/tree/main/viewer" target="_blank" rel="noopener">viewer/</a> for how it works.</p>
     </div>
   </section>
 
