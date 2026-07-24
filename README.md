@@ -57,10 +57,18 @@ machine; a **user**/`--dest` install writes absolute paths.
 ## Flow (once activated)
 
 1. `maple-architect` → spec + plan (consult `maple-advisor` on hard trade-offs).
-2. **Isolate** — create + enter a git worktree for the task before any code is written
-   (`EnterWorktree` tool or `superpowers:using-git-worktrees`). All subsequent team work —
-   engineer edits, QA, security — runs inside it; subagents inherit the main thread's cwd.
-   Engineers hard-refuse to edit the main working copy.
+2. **Isolate — ask first.** Before any code is written, ask the user how to isolate the work and
+   explain the trade-off:
+   - **Git worktree (isolated):** a separate working directory + branch; the user's main checkout
+     stays untouched, so they can keep using it. Slightly more setup (fresh dir, may need its own
+     dependency install).
+   - **Separate branch (same checkout):** a new branch in the current working tree — lighter, no
+     new dir, deps already present, but it switches the working tree to the branch (affects
+     uncommitted work / open files; the main tree isn't free for other use meanwhile).
+   Set up the chosen one (worktree: `EnterWorktree` / `superpowers:using-git-worktrees`; branch:
+   `git switch -c`), then dispatch the engineer telling it which mode. All team work — engineer
+   edits, QA, security — happens on that worktree/branch. Engineers refuse to edit the default
+   branch of the main checkout (no isolation).
 3. `maple-engineer` executes → escalate to `maple-engineer-hard` if genuinely hard.
 4. `maple-qa` (correctness) and `maple-security` (vulnerabilities) review vs the plan before
    anything is called done — dispatch both in parallel on the same diff. If fixes change the

@@ -19,10 +19,18 @@ after I say yes. Default (no answer / trivial task) = handle it yourself, solo.
 
 ## Flow (once activated)
 1. maple-architect → spec + plan (consult maple-advisor on hard trade-offs)
-2. ISOLATE — create + enter a git worktree for the task BEFORE any code is written
-   (EnterWorktree tool or superpowers:using-git-worktrees). ALL subsequent team work —
-   engineer edits, QA, security — runs inside it; subagents inherit the main thread's
-   cwd. Engineers hard-refuse to edit the main working copy.
+2. ISOLATE — ASK ME FIRST, before any code is written. Ask how to isolate the work and
+   explain the trade-off:
+   - **Git worktree (isolated):** a separate working directory + branch. My main checkout
+     stays untouched, so I can keep using it while the team works. Slightly more setup —
+     a fresh dir that may need its own dependency install.
+   - **Separate branch (same checkout):** a new branch in the current working tree. Lighter —
+     no new dir, deps already present — but it switches my working tree to the branch, so
+     uncommitted changes / open files are affected and the main tree isn't free for other use.
+   Set up the chosen one (worktree: EnterWorktree / superpowers:using-git-worktrees; branch:
+   git switch -c <name>), then dispatch the engineer, telling it which mode. ALL team work —
+   engineer edits, QA, security — happens on that worktree/branch. Engineers refuse to edit
+   the default branch of the main checkout (no isolation).
 3. maple-engineer executes → escalate to maple-engineer-hard if genuinely hard
 4. maple-qa (correctness) and maple-security (vulnerabilities) review vs the plan
    before anything is called done — dispatch both in parallel on the same diff.
