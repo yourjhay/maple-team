@@ -32,7 +32,9 @@ If no session matches, the viewer says so ("no runs found in …") instead of si
 
 Pick a run from the dropdown (the built-in **Sample maple run** is always there),
 then press ▶ — or hit **● Live** to follow the running session. Scrub the timeline,
-change speed, restart. The activity ticker logs every tool call per agent.
+change speed, restart. The activity ticker logs every tool call per agent, and an
+**activity companion** chip pops up under the working node showing what it's doing
+right now (e.g. `📄 Read rateLimiter.ts`).
 
 Flags: `--port N` (default 4757), `--project DIR` (repo whose runs to show; defaults to
 this repo), `--root DIR` (transcripts dir; defaults to `~/.claude/projects`).

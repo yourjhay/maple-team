@@ -57,6 +57,35 @@
   @keyframes ringPulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.5);opacity:0}}
   .pulse{filter:drop-shadow(0 0 8px currentColor)}
 
+  /* ---------- activity companion (what a node is doing right now) ---------- */
+  .act-fo{overflow:visible; pointer-events:none}
+  .act{
+    display:inline-flex; align-items:center; gap:7px; position:relative;
+    font-family:var(--mono); font-size:11px; line-height:1; white-space:nowrap;
+    padding:6px 11px; border-radius:999px; max-width:190px;
+    background:rgba(20,14,11,.94); border:1px solid var(--ac,var(--line)); color:var(--ink);
+    box-shadow:0 10px 26px -12px rgba(0,0,0,.85), 0 0 14px -6px var(--ac,transparent);
+    opacity:0; transform:translateY(7px) scale(.94); transform-origin:top center;
+    transition:opacity .28s ease, transform .3s cubic-bezier(.2,.85,.25,1);
+    overflow:hidden;
+  }
+  .act.show{opacity:1; transform:none}
+  .act .ico{font-size:12px; flex:none; color:var(--ac,var(--amber))}
+  .act .tool{color:var(--ac,var(--amber)); font-weight:600; flex:none}
+  .act .txt{color:var(--dim); overflow:hidden; text-overflow:ellipsis; max-width:118px}
+  .act .dots{flex:none; letter-spacing:1.5px; color:var(--faint)}
+  .act.show .dots span{animation:actdot 1.1s infinite}
+  .act .dots span:nth-child(2){animation-delay:.18s}
+  .act .dots span:nth-child(3){animation-delay:.36s}
+  @keyframes actdot{0%,100%{opacity:.2}40%{opacity:1}}
+  .act::after{                                   /* shimmer sweep on each new action */
+    content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    background:linear-gradient(105deg,transparent 30%,color-mix(in srgb,var(--ac,#fff) 22%,transparent) 50%,transparent 70%);
+    transform:translateX(-120%); opacity:0;
+  }
+  .act.flash::after{animation:actsweep .6s ease}
+  @keyframes actsweep{0%{transform:translateX(-120%);opacity:1}100%{transform:translateX(120%);opacity:0}}
+
   .controls{
     display:flex; flex-wrap:wrap; gap:14px; align-items:center;
     border-top:1px solid var(--line); margin-top:4px; padding:14px 16px 16px;
@@ -96,7 +125,7 @@
   </header>
 
   <div class="stage">
-    <svg id="diagram" viewBox="0 0 1200 690" role="img" aria-label="Maple Team run visualization">
+    <svg id="diagram" viewBox="0 0 1200 770" role="img" aria-label="Maple Team run visualization">
       <path id="e-you-main"  class="edge" d="M600,108 L600,196"/>
       <path id="e-main-arch" class="edge" d="M556,268 C420,340 300,380 246,432"/>
       <path id="e-main-adv"  class="edge" d="M656,232 C790,222 900,222 986,230"/>
@@ -171,9 +200,56 @@ for (const n of NODES){
   chip.setAttribute("class","chip"); chip.setAttribute("x",n.x); chip.setAttribute("y",n.y+n.r+42); chip.setAttribute("text-anchor","middle"); chip.textContent=n.chip;
   const badge = document.createElementNS(svgNS,"text");
   badge.setAttribute("class","badge"); badge.setAttribute("x",n.x+n.r-4); badge.setAttribute("y",n.y-n.r+8); badge.setAttribute("text-anchor","middle"); badge.setAttribute("fill",n.color);
-  g.append(ring,core,glyph,label,chip,badge);
+  // activity companion: an HTML chip (in a foreignObject) below the node
+  const fo = document.createElementNS(svgNS,"foreignObject");
+  fo.setAttribute("class","act-fo"); fo.setAttribute("x",n.x-95); fo.setAttribute("y",n.y+n.r+50);
+  fo.setAttribute("width",190); fo.setAttribute("height",40);
+  const wrap = document.createElementNS("http://www.w3.org/1999/xhtml","div");
+  wrap.setAttribute("style","display:flex;justify-content:center");
+  const act = document.createElementNS("http://www.w3.org/1999/xhtml","div");
+  act.setAttribute("class","act"); act.style.setProperty("--ac", n.color);
+  act.innerHTML = '<span class="ico"></span><span class="tool"></span><span class="txt"></span><span class="dots"><span>·</span><span>·</span><span>·</span></span>';
+  wrap.appendChild(act); fo.appendChild(wrap);
+  g.append(ring,core,glyph,label,chip,badge,fo);
   nodesG.appendChild(g);
-  nodeEls[n.id] = {g, core, badge, color:n.color};
+  nodeEls[n.id] = {g, core, badge, color:n.color, act, ico:act.querySelector(".ico"), toolEl:act.querySelector(".tool"), txt:act.querySelector(".txt"), lastKey:""};
+}
+
+const TOOL_ICON = {
+  Read:"📄", Edit:"✎", Write:"✎", NotebookEdit:"✎",
+  Bash:"❯", Grep:"🔍", Glob:"📁",
+  WebFetch:"🌐", WebSearch:"🌐",
+  Agent:"➤", Task:"➤", Skill:"✦", start:"➤", prompt:"◆",
+};
+const iconFor = (tool) => TOOL_ICON[tool] || "•";
+
+// Show/refresh the activity chip on the node that owns the current event.
+function updateActivity(idx){
+  let owner=null, tool="", label="";
+  const e = idx>=0 ? EVENTS[idx] : null;
+  if(e){
+    if(e.kind==="agent_tool" || e.kind==="main_tool"){ owner=nodeOf(e.agentType); tool=e.tool||""; label=e.target||""; }
+    else if(e.kind==="agent_spawn"){ owner=nodeOf(e.agentType); tool="start"; label=e.text||shortLabel(e.agentType); }
+    else if(e.kind==="run_start"){ owner="you"; tool="prompt"; label=e.text||"new task"; }
+    // agent_result / others: no chip (agent settled)
+  }
+  for(const n of NODES){
+    const el = nodeEls[n.id];
+    if(n.id===owner && tool){
+      const key = tool+"|"+label;
+      el.ico.textContent = iconFor(tool);
+      el.toolEl.textContent = tool==="start" ? "→" : tool;
+      el.txt.textContent = label;
+      el.act.classList.add("show");
+      if(key!==el.lastKey){                 // new action → shimmer sweep
+        el.act.classList.remove("flash"); void el.act.offsetWidth; el.act.classList.add("flash");
+        el.lastKey = key;
+      }
+    } else {
+      el.act.classList.remove("show");
+      el.lastKey = "";
+    }
+  }
 }
 
 function firePulse(edgeId, rev, color){
@@ -228,6 +304,7 @@ function applyState(upto){
     nodeEls[n.id].core.style.filter = isActive ? `drop-shadow(0 0 14px ${nodeEls[n.id].color})` : "";
     nodeEls[n.id].badge.textContent = s==="done" ? "✓" : "";
   }
+  updateActivity(upto);
 }
 
 function tickerRow(e){
