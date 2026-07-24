@@ -20,7 +20,7 @@ file with YAML frontmatter that Claude loads as a callable agent type.
 | `maple-architect` | opus | Brainstorm + spec + written plan before any code. Read-only. |
 | `maple-engineer` | sonnet | Execute the plan, write code. Default engineer. |
 | `maple-engineer-hard` | opus | Same, for gnarly / high-stakes / subtle work. Escalate here. |
-| `maple-qa` | sonnet | Review output (code + visual/E2E via Playwright) against the plan, per the QA rules protocol. PASS / CONDITIONAL PASS / FAIL; persists reports to `docs/qa-reports/`. Read-only on code. |
+| `maple-qa` | sonnet | Review output (code + visual/E2E via Playwright) against the plan. Fast **Core** review by default (PASS / CONDITIONAL PASS / FAIL); opt-in **Full audit** adds extra dimensions, docs/ADR, round tracking, persisted reports. Read-only on code. |
 | `maple-security` | opus | Adversarial security audit (OWASP Top 10 + more). Read-only critic. |
 
 `maple-security-audit-guide.md` and `maple-qa-rules-guide.md` are not agents — they're the

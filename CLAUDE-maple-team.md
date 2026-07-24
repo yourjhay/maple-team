@@ -14,7 +14,7 @@ after I say yes. Default (no answer / trivial task) = handle it yourself, solo.
 | maple-architect | opus | Brainstorm + spec + written plan. MUST use Superpowers skills (brainstorming → writing-plans). Read-only. |
 | maple-engineer | sonnet | Execute the plan, write code. Default engineer. |
 | maple-engineer-hard | opus | Same, for gnarly / high-stakes / subtle work. Escalate here from maple-engineer. |
-| maple-qa | sonnet | Review output (code + visual/E2E via Playwright) against the plan, per the QA rules protocol. Verdicts PASS / CONDITIONAL PASS / FAIL; persists reports to docs/qa-reports/. Read-only on code. |
+| maple-qa | sonnet | Review output (code + visual/E2E via Playwright) against the plan. Fast Core review by default (PASS / CONDITIONAL PASS / FAIL); opt-in Full audit adds extra dimensions, docs/ADR, round tracking, persisted reports. Read-only on code. |
 | maple-security | opus | Adversarial security audit of the diff (authz, injection, money/ledger, data exposure). Read-only critic. |
 
 ## Flow (once activated)
@@ -38,7 +38,8 @@ after I say yes. Default (no answer / trivial task) = handle it yourself, solo.
 - An agent's model is fixed at spawn. To change model, route to a different agent
   (e.g. maple-engineer → maple-engineer-hard).
 - maple-qa has Playwright browser tools bundled (plugin: playwright) for visual/E2E
-  review; its protocol lives in ~/.claude/agents/maple-qa-rules-guide.md. It is
-  round-aware: pass it the plan + diff; on re-review after fixes it tracks prior
-  findings via docs/qa-reports/. It cannot ask questions mid-run — relay anything in
+  review; its protocol lives in ~/.claude/agents/maple-qa-rules-guide.md. Pass it the
+  plan + diff. It runs a fast Core review by default; ask for a "full audit" (or it
+  self-escalates on big/high-risk changes) to get round-aware re-review + persisted
+  reports under docs/qa-reports/. It cannot ask questions mid-run — relay anything in
   its "Clarifications Needed" section to me.
