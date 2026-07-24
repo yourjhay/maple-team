@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maple Team — Run Viewer</title>
+<style>
+  :root{
+    --bg:#120c09; --bg2:#19100b; --panel:#1e1410; --line:#3a2a1e;
+    --ink:#f3e8da; --dim:#b8a08f; --faint:#7d685a;
+    --ember:#e8613c; --amber:#ffb454; --ok:#6fc48b; --fail:#e5484d;
+    --c-advisor:#b48ee8; --c-architect:#6fc48b; --c-eng:#5fa8f5; --c-hard:#7f8ef0; --c-qa:#ffb454; --c-sec:#e5484d;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg); color:var(--ink); font-family:var(--sans); line-height:1.5}
+  .wrap{max-width:1200px; margin:0 auto; padding:20px 22px 60px}
+
+  header{display:flex; flex-wrap:wrap; gap:14px 20px; align-items:center; padding:6px 0 18px}
+  header h1{font-family:var(--serif); font-weight:600; font-size:26px; margin:0; letter-spacing:-.01em}
+  header h1 .leaf{display:inline-block}
+  header .grow{flex:1}
+  select, button{
+    font-family:var(--mono); font-size:13px; color:var(--ink);
+    background:var(--bg2); border:1px solid var(--line); border-radius:9px;
+    padding:8px 12px; cursor:pointer; transition:border-color .2s, color .2s;
+  }
+  select:hover, button:hover{border-color:var(--amber); color:var(--amber)}
+  button:focus-visible, select:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+  button.primary{background:var(--ember); border-color:var(--ember); color:#fff}
+  button.primary:hover{background:#f47450; color:#fff}
+  .meta{font-family:var(--mono); font-size:12px; color:var(--faint)}
+
+  .stage{
+    background:linear-gradient(180deg,var(--bg2),var(--panel));
+    border:1px solid var(--line); border-radius:16px; padding:8px 8px 0;
+    box-shadow:0 30px 80px -30px rgba(0,0,0,.8);
+  }
+  #diagram{width:100%; height:auto; display:block}
+  .edge{fill:none; stroke:var(--line); stroke-width:2}
+  .edge.esc{stroke-dasharray:7 7}
+  .node circle.core{stroke-width:2; transition:filter .35s, opacity .35s}
+  .node text{fill:var(--ink); font-family:var(--serif); font-size:18px; font-weight:600}
+  .node .chip{fill:var(--faint); font-family:var(--mono); font-size:11px; letter-spacing:.06em}
+  .node .glyph{font-size:28px; font-family:var(--sans)}
+  .node .ring{fill:none; stroke-width:2; opacity:0; transform-box:fill-box; transform-origin:center}
+  .node.idle{opacity:.34}
+  .node.seen{opacity:.7}
+  .node.active .ring{opacity:1; animation:ringPulse 1.5s ease-out infinite}
+  .node .badge{opacity:0; font-family:var(--mono); font-weight:700; font-size:15px}
+  .node.done .badge{opacity:1}
+  @keyframes ringPulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+  .pulse{filter:drop-shadow(0 0 8px currentColor)}
+
+  .controls{
+    display:flex; flex-wrap:wrap; gap:14px; align-items:center;
+    border-top:1px solid var(--line); margin-top:4px; padding:14px 16px 16px;
+  }
+  #scrub{flex:1; min-width:220px; accent-color:var(--ember)}
+  .count{font-family:var(--mono); font-size:12px; color:var(--dim); min-width:96px}
+  .cap{font-family:var(--serif); font-style:italic; font-size:16px; color:var(--ink); flex-basis:100%; min-height:24px}
+
+  .ticker{
+    margin-top:16px; background:#0d0906; border:1px solid var(--line); border-radius:12px;
+    font-family:var(--mono); font-size:12.5px; height:200px; overflow-y:auto; padding:12px 14px;
+  }
+  .ticker .row{display:flex; gap:10px; padding:3px 0; align-items:baseline; opacity:0; animation:fadein .3s forwards}
+  @keyframes fadein{to{opacity:1}}
+  .ticker .tt{color:var(--faint); flex:none; width:60px}
+  .ticker .ag{flex:none; width:150px; font-weight:600}
+  .ticker .op{color:var(--dim)}
+  .ticker .k-spawn .op::before{content:"▸ spawn "}
+  .ticker .k-result .op::before{content:"✓ done "}
+  .ticker .k-run_start{color:var(--amber)}
+  .empty{color:var(--faint); font-style:italic}
+
+  .legend{display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:12px; font-family:var(--mono); font-size:11px; color:var(--faint)}
+  .legend b{color:var(--dim); font-weight:400}
+  .note{margin-top:10px; font-family:var(--mono); font-size:11.5px; color:var(--faint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Maple <span class="leaf">🍁</span> Run Viewer</h1>
+    <div class="grow"></div>
+    <label class="meta">run&nbsp;
+      <select id="runsel"><option>loading…</option></select>
+    </label>
+    <button id="reload" title="Refresh run list">↻</button>
+  </header>
+
+  <div class="stage">
+    <svg id="diagram" viewBox="0 0 1200 690" role="img" aria-label="Maple Team run visualization">
+      <path id="e-you-main"  class="edge" d="M600,108 L600,196"/>
+      <path id="e-main-arch" class="edge" d="M556,268 C420,340 300,380 246,432"/>
+      <path id="e-main-adv"  class="edge" d="M656,232 C790,222 900,222 986,230"/>
+      <path id="e-main-eng"  class="edge" d="M588,290 C570,350 556,390 552,428"/>
+      <path id="e-eng-hard"  class="edge esc" d="M610,492 C680,530 730,552 782,568"/>
+      <path id="e-main-qa"   class="edge" d="M652,262 C820,330 940,390 992,436"/>
+      <path id="e-main-sec"  class="edge" d="M660,258 C910,344 1002,470 1008,560"/>
+      <g id="pulses"></g>
+      <g id="nodes"></g>
+    </svg>
+
+    <div class="controls">
+      <button id="play" class="primary" aria-label="Play">▶</button>
+      <button id="restart" title="Restart">⟲</button>
+      <button id="speed" title="Playback speed">1×</button>
+      <input id="scrub" type="range" min="0" max="0" value="0" aria-label="Timeline">
+      <span class="count" id="count">— / —</span>
+      <div class="cap" id="cap"></div>
+    </div>
+  </div>
+
+  <div class="ticker" id="ticker"><span class="empty">Pick a run to replay.</span></div>
+  <div class="legend">
+    <b>Nodes:</b> <span>dim = idle</span><span>ring = active</span><span>✓ = returned</span>
+    <b>Edges:</b> <span>pulse = hand-off</span>
+  </div>
+  <div class="note" id="note"></div>
+</div>
+
+<script type="module">
+const svgNS = "http://www.w3.org/2000/svg";
+
+// Fixed maple roster → diagram nodes. Non-maple agents fall back to the
+// orchestrator node and just surface by name in the ticker.
+const NODES = [
+  {id:"you",  x:600,  y:70,  r:36, color:"#e8613c", glyph:"👤", label:"You",            chip:"prompt"},
+  {id:"main", x:600,  y:232, r:44, color:"#ffb454", glyph:"🍁", label:"Orchestrator",   chip:"main thread"},
+  {id:"adv",  x:1040, y:232, r:38, color:"#b48ee8", glyph:"🦉", label:"Advisor",        chip:"2nd opinion"},
+  {id:"arch", x:216,  y:470, r:42, color:"#6fc48b", glyph:"📐", label:"Architect",      chip:"plan"},
+  {id:"eng",  x:556,  y:470, r:42, color:"#5fa8f5", glyph:"🔨", label:"Engineer",       chip:"build"},
+  {id:"hard", x:816,  y:588, r:34, color:"#7f8ef0", glyph:"⚒️", label:"Engineer-Hard",  chip:"escalation"},
+  {id:"qa",   x:1010, y:470, r:42, color:"#ffb454", glyph:"🔍", label:"QA",             chip:"verify"},
+  {id:"sec",  x:1010, y:600, r:34, color:"#e5484d", glyph:"🛡️", label:"Security",       chip:"audit"},
+];
+const MAP = {
+  "orchestrator":{node:"main"},
+  "maple-architect":{node:"arch", edge:"e-main-arch"},
+  "maple-advisor":{node:"adv", edge:"e-main-adv"},
+  "maple-engineer":{node:"eng", edge:"e-main-eng"},
+  "maple-engineer-hard":{node:"hard", edge:"e-eng-hard"},
+  "maple-qa":{node:"qa", edge:"e-main-qa"},
+  "maple-security":{node:"sec", edge:"e-main-sec"},
+};
+const nodeOf = (t) => (MAP[t] || {node:"main"}).node;
+const shortLabel = (t) => t.replace(/^maple-/, "");
+
+const nodesG = document.getElementById("nodes");
+const pulsesG = document.getElementById("pulses");
+const nodeEls = {};
+for (const n of NODES){
+  const g = document.createElementNS(svgNS,"g"); g.setAttribute("class","node idle"); g.dataset.id=n.id;
+  const ring = document.createElementNS(svgNS,"circle");
+  ring.setAttribute("class","ring"); ring.setAttribute("cx",n.x); ring.setAttribute("cy",n.y); ring.setAttribute("r",n.r+6); ring.setAttribute("stroke",n.color);
+  const core = document.createElementNS(svgNS,"circle");
+  core.setAttribute("class","core"); core.setAttribute("cx",n.x); core.setAttribute("cy",n.y); core.setAttribute("r",n.r); core.setAttribute("fill","#1e1410"); core.setAttribute("stroke",n.color);
+  const glyph = document.createElementNS(svgNS,"text");
+  glyph.setAttribute("class","glyph"); glyph.setAttribute("x",n.x); glyph.setAttribute("y",n.y+9); glyph.setAttribute("text-anchor","middle"); glyph.textContent=n.glyph;
+  const label = document.createElementNS(svgNS,"text");
+  label.setAttribute("x",n.x); label.setAttribute("y",n.y+n.r+24); label.setAttribute("text-anchor","middle"); label.textContent=n.label;
+  const chip = document.createElementNS(svgNS,"text");
+  chip.setAttribute("class","chip"); chip.setAttribute("x",n.x); chip.setAttribute("y",n.y+n.r+42); chip.setAttribute("text-anchor","middle"); chip.textContent=n.chip;
+  const badge = document.createElementNS(svgNS,"text");
+  badge.setAttribute("class","badge"); badge.setAttribute("x",n.x+n.r-4); badge.setAttribute("y",n.y-n.r+8); badge.setAttribute("text-anchor","middle"); badge.setAttribute("fill",n.color);
+  g.append(ring,core,glyph,label,chip,badge);
+  nodesG.appendChild(g);
+  nodeEls[n.id] = {g, core, badge, color:n.color};
+}
+
+function firePulse(edgeId, rev, color){
+  const path = document.getElementById(edgeId); if(!path) return;
+  const len = path.getTotalLength();
+  const c = document.createElementNS(svgNS,"circle");
+  c.setAttribute("r","6"); c.setAttribute("fill",color); c.setAttribute("class","pulse"); c.style.color=color;
+  pulsesG.appendChild(c);
+  const start = performance.now(), dur = 900;
+  function tick(now){
+    const t = (now-start)/dur;
+    if(t>=1){ c.remove(); return; }
+    const e = t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+    const pos = path.getPointAtLength((rev?1-e:e)*len);
+    c.setAttribute("cx",pos.x); c.setAttribute("cy",pos.y);
+    c.setAttribute("opacity", t>.85 ? (1-t)/.15 : 1);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ---- state ----
+let EVENTS = [], idx = -1, playing = false, timer = null;
+const SPEEDS = [1,2,4,0.5]; let speedI = 0;
+const BASE_MS = 850;
+
+const el = (id) => document.getElementById(id);
+const scrub = el("scrub"), cap = el("cap"), count = el("count"), ticker = el("ticker");
+
+function applyState(upto){
+  const st = {};                     // node -> 'seen' | 'done'
+  for(let k=0;k<=upto;k++){
+    const e = EVENTS[k]; const node = nodeOf(e.agentType);
+    if(e.kind==="agent_result") st[node]="done";
+    else if(st[node]!=="done") st[node]="seen";
+    if(e.kind==="run_start"){ st["you"]="seen"; st["main"]="seen"; }
+  }
+  const active = upto>=0 ? nodeOf(EVENTS[upto].agentType) : null;
+  for(const n of NODES){
+    const s = st[n.id];
+    const cls = ["node"];
+    if(n.id===active && EVENTS[upto] && EVENTS[upto].kind!=="agent_result") cls.push("active");
+    if(s==="done") cls.push("done");
+    else if(s==="seen") cls.push("seen");
+    else if(n.id!==active) cls.push("idle");
+    nodeEls[n.id].g.setAttribute("class", cls.join(" "));
+    nodeEls[n.id].core.style.filter = (n.id===active) ? `drop-shadow(0 0 14px ${nodeEls[n.id].color})` : "";
+    nodeEls[n.id].badge.textContent = s==="done" ? "✓" : "";
+  }
+}
+
+function tickerRow(e){
+  const row = document.createElement("div");
+  row.className = "row k-"+e.kind;
+  const tt = (e.t||"").slice(11,19);
+  const opText = e.kind==="run_start" ? ("“"+(e.text||"run started")+"”")
+    : e.kind==="agent_spawn" ? (e.text||shortLabel(e.agentType))
+    : e.kind==="agent_result" ? (e.text||"returned")
+    : ((e.tool||"")+(e.target?(" · "+e.target):""));
+  row.innerHTML = `<span class="tt">${tt}</span><span class="ag" style="color:${nodeEls[nodeOf(e.agentType)].color}">${shortLabel(e.agentType)}</span><span class="op"></span>`;
+  row.querySelector(".op").textContent = opText;
+  return row;
+}
+function rebuildTicker(upto){
+  ticker.innerHTML = "";
+  if(upto<0){ ticker.innerHTML = '<span class="empty">Ready.</span>'; return; }
+  const from = Math.max(0, upto-40);
+  for(let k=from;k<=upto;k++) ticker.appendChild(tickerRow(EVENTS[k]));
+  ticker.scrollTop = ticker.scrollHeight;
+}
+
+function seek(i){
+  idx = Math.max(-1, Math.min(EVENTS.length-1, i));
+  applyState(idx);
+  rebuildTicker(idx);
+  scrub.value = Math.max(0, idx);
+  count.textContent = `${idx+1} / ${EVENTS.length}`;
+  const e = EVENTS[idx];
+  cap.textContent = e ? capOf(e) : "";
+  if(idx>=EVENTS.length-1) stop();
+}
+function capOf(e){
+  if(e.kind==="run_start") return "Task received — " + (e.text||"");
+  if(e.kind==="agent_spawn") return `Orchestrator dispatches ${shortLabel(e.agentType)}` + (e.text?` — ${e.text}`:"");
+  if(e.kind==="agent_result") return `${shortLabel(e.agentType)} returns` + (e.text?` — ${e.text}`:"");
+  if(e.kind==="agent_tool") return `${shortLabel(e.agentType)}: ${e.tool}${e.target?" "+e.target:""}`;
+  return `Orchestrator: ${e.tool}${e.target?" "+e.target:""}`;
+}
+
+function step(){
+  if(idx>=EVENTS.length-1){ stop(); return; }
+  idx++;
+  applyState(idx);
+  const e = EVENTS[idx];
+  const m = MAP[e.agentType];
+  if(e.kind==="agent_spawn" && m && m.edge) firePulse(m.edge,false, nodeEls[nodeOf(e.agentType)].color);
+  if(e.kind==="run_start") firePulse("e-you-main",false,"#e8613c");
+  if(e.kind==="agent_result" && m && m.edge) firePulse(m.edge,true, nodeEls[nodeOf(e.agentType)].color);
+  ticker.appendChild(tickerRow(e));
+  while(ticker.children.length>60) ticker.removeChild(ticker.firstChild);
+  ticker.scrollTop = ticker.scrollHeight;
+  scrub.value = idx; count.textContent = `${idx+1} / ${EVENTS.length}`; cap.textContent = capOf(e);
+  if(idx>=EVENTS.length-1) stop();
+}
+function play(){ if(!EVENTS.length) return; if(idx>=EVENTS.length-1) seek(-1); playing=true; el("play").textContent="❚❚"; schedule(); }
+function stop(){ playing=false; el("play").textContent="▶"; clearInterval(timer); }
+function schedule(){ clearInterval(timer); if(playing) timer=setInterval(step, BASE_MS/SPEEDS[speedI]); }
+
+el("play").addEventListener("click", ()=> playing?stop():play());
+el("restart").addEventListener("click", ()=>{ stop(); seek(-1); });
+el("speed").addEventListener("click", ()=>{ speedI=(speedI+1)%SPEEDS.length; el("speed").textContent=SPEEDS[speedI]+"×"; if(playing) schedule(); });
+scrub.addEventListener("input", ()=>{ stop(); seek(parseInt(scrub.value,10)); });
+
+// ---- data ----
+async function loadRuns(){
+  const sel = el("runsel");
+  try{
+    const r = await fetch("/runs"); const d = await r.json();
+    el("note").textContent = `project: ${d.project}`;
+    sel.innerHTML = "";
+    for(const run of d.runs){
+      const o = document.createElement("option"); o.value=run.id; o.textContent=run.title; sel.appendChild(o);
+    }
+    if(d.runs.length) loadRun(d.runs[0].id);
+  }catch(err){ sel.innerHTML = `<option>server offline</option>`; el("note").textContent = String(err); }
+}
+async function loadRun(id){
+  stop();
+  try{
+    const r = await fetch("/run/"+encodeURIComponent(id)); const d = await r.json();
+    if(d.error){ cap.textContent = d.error; return; }
+    EVENTS = d.events || [];
+    scrub.max = Math.max(0, EVENTS.length-1);
+    seek(-1);
+    cap.textContent = `${d.title||id} — ${EVENTS.length} events${d.isMapleRun?"":" (not a maple run)"}`;
+    ticker.innerHTML = '<span class="empty">Press ▶ to replay.</span>';
+  }catch(err){ cap.textContent = String(err); }
+}
+el("runsel").addEventListener("change", (e)=> loadRun(e.target.value));
+el("reload").addEventListener("click", loadRuns);
+loadRuns();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "maple-team-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local replay/live viewer for Maple Team runs, reading Claude Code session transcripts.",
+  "bin": { "maple-viewer": "server.mjs" },
+  "scripts": {
+    "viewer": "node server.mjs",
+    "fixture": "node fixtures/build-sample.mjs"
+  }
+}
