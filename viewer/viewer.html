@@ -211,7 +211,8 @@ function applyState(upto){
     else if(st[node]!=="done") st[node]="seen";
     if(e.kind==="run_start"){ st["you"]="seen"; st["main"]="seen"; }
   }
-  const active = upto>=0 ? nodeOf(EVENTS[upto].agentType) : null;
+  let active = upto>=0 ? nodeOf(EVENTS[upto].agentType) : null;
+  if(upto>=0 && EVENTS[upto].kind==="run_start") active="you";   // light You on the prompt
   for(const n of NODES){
     const s = st[n.id];
     const cls = ["node"];
@@ -297,11 +298,21 @@ function liveOn(){
   es = new EventSource("/events");
   es.onmessage = (m)=>{
     let d; try{ d=JSON.parse(m.data); }catch{ return; }
-    if(d.type==="run"){ EVENTS=[]; firstSnap=true; seek(-1); cap.textContent=`live · ${d.title||d.id}`; }
+    if(d.type==="idle"){
+      EVENTS=[]; seek(-1);
+      cap.textContent = `live · no runs found in ${d.project} — start a Claude session in that repo (or pass --project)`;
+    }
+    else if(d.type==="run"){ EVENTS=[]; firstSnap=true; seek(-1); cap.textContent=`live · ${d.title||d.id}`; }
     else if(d.type==="snapshot"){
       EVENTS = d.events||[]; scrub.max=Math.max(0,EVENTS.length-1);
-      if(firstSnap){ seek(EVENTS.length-1); firstSnap=false; cap.textContent=`live · ${d.title||d.id} — caught up`; }
-      // otherwise the chase stepper animates newly-appended events
+      if(firstSnap){
+        firstSnap=false;
+        // fresh/short run → animate from the top so you see You→Orchestrator→…;
+        // long in-progress backlog → jump to the current state instead of replaying it.
+        if(EVENTS.length > 12){ seek(EVENTS.length-1); cap.textContent=`live · ${d.title||d.id} — caught up`; }
+        else { seek(-1); }
+      }
+      // subsequent snapshots: the chase stepper animates newly-appended events
     }
   };
   es.onerror = ()=>{ cap.textContent="live: connection lost"; };

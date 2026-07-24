@@ -9,7 +9,7 @@
 
 import { createServer } from "node:http";
 import { readFileSync, existsSync } from "node:fs";
-import { join, dirname, extname } from "node:path";
+import { join, dirname, extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseSession, listRuns } from "./parse.mjs";
 
@@ -20,7 +20,10 @@ function arg(name, def) {
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : def;
 }
 const PORT = parseInt(arg("--port", process.env.PORT || "4757"), 10);
-const PROJECT = arg("--project", process.cwd());
+// Default to the repo the viewer lives in (its parent dir), NOT process.cwd():
+// `npm run viewer` runs with cwd=viewer/, which would never match a real
+// session's cwd. Resolve --project to an absolute path so cwd matching works.
+const PROJECT = resolve(arg("--project", dirname(here)));
 const PROJECTS_ROOT = arg("--root", join(process.env.HOME, ".claude", "projects"));
 const SAMPLE = join(here, "fixtures", "maple-sample.json");
 
@@ -76,13 +79,17 @@ const server = createServer((req, res) => {
       res.write(": connected\n\n");
       const send = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
       const wanted = url.searchParams.get("run");   // optional pin to one run
-      let lastRunId = null, lastMtime = -1;
+      let lastRunId = null, lastMtime = -1, sentIdle = false;
 
       const tick = () => {
         let runs;
         try { runs = listRuns(PROJECT, PROJECTS_ROOT); } catch { return; }
         const run = wanted ? runs.find(r => r.id === wanted) : runs[0];
-        if (!run) return;
+        if (!run) {
+          if (!sentIdle) { send({ type: "idle", project: PROJECT }); sentIdle = true; }
+          return;
+        }
+        sentIdle = false;
         if (run.id !== lastRunId) {            // active run changed → reset client
           lastRunId = run.id; lastMtime = -1;
           send({ type: "run", id: run.id, title: run.title });
