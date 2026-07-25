@@ -237,16 +237,20 @@ function updateActivity(idx){
     const el = nodeEls[n.id];
     if(n.id===owner && tool){
       const key = tool+"|"+label;
-      el.ico.textContent = iconFor(tool);
-      el.toolEl.textContent = tool==="start" ? "→" : tool;
-      el.txt.textContent = label;
-      el.act.classList.add("show");
-      if(key!==el.lastKey){                 // new action → shimmer sweep
+      if(key!==el.lastKey){                 // new action → show, shimmer, then auto-fade
+        el.ico.textContent = iconFor(tool);
+        el.toolEl.textContent = tool==="start" ? "→" : tool;
+        el.txt.textContent = label;
+        el.act.classList.add("show");
         el.act.classList.remove("flash"); void el.act.offsetWidth; el.act.classList.add("flash");
         el.lastKey = key;
+        clearTimeout(el.hideTimer);
+        el.hideTimer = setTimeout(() => el.act.classList.remove("show"), 2000);
       }
+      // same action still current: leave it — the 2s timer fades it out
     } else {
       el.act.classList.remove("show");
+      clearTimeout(el.hideTimer);
       el.lastKey = "";
     }
   }
