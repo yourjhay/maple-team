@@ -36,6 +36,9 @@ change speed, restart. The activity ticker logs every tool call per agent, and a
 **activity companion** chip pops up under the working node showing what it's doing
 right now (e.g. `📄 Read rateLimiter.ts`).
 
+**Drag the nodes** to rearrange the diagram — edges follow, and the layout is saved to
+`localStorage` so it persists across reloads. **⤾ layout** resets to the default arrangement.
+
 Flags: `--port N` (default 4757), `--project DIR` (repo whose runs to show; defaults to
 this repo), `--root DIR` (transcripts dir; defaults to `~/.claude/projects`).
 

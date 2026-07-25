@@ -122,6 +122,7 @@
       <select id="runsel"><option>loading…</option></select>
     </label>
     <button id="reload" title="Refresh run list">↻</button>
+    <button id="resetlayout" title="Reset node layout to default">⤾ layout</button>
   </header>
 
   <div class="stage">
@@ -212,8 +213,53 @@ for (const n of NODES){
   wrap.appendChild(act); fo.appendChild(wrap);
   g.append(ring,core,glyph,label,chip,badge,fo);
   nodesG.appendChild(g);
-  nodeEls[n.id] = {g, core, badge, color:n.color, act, ico:act.querySelector(".ico"), toolEl:act.querySelector(".tool"), txt:act.querySelector(".txt"), lastKey:""};
+  nodeEls[n.id] = {g, core, badge, color:n.color, act, ico:act.querySelector(".ico"), toolEl:act.querySelector(".tool"), txt:act.querySelector(".txt"), lastKey:"", base:{x:n.x,y:n.y}, r:n.r, off:{x:0,y:0}};
 }
+
+// ---- draggable layout (edges follow; positions persist) ----
+const svg = document.getElementById("diagram");
+const EDGES = [
+  {id:"e-you-main", from:"you",  to:"main"},
+  {id:"e-main-arch",from:"main", to:"arch"},
+  {id:"e-main-adv", from:"main", to:"adv"},
+  {id:"e-main-eng", from:"main", to:"eng"},
+  {id:"e-eng-hard", from:"eng",  to:"hard"},
+  {id:"e-main-qa",  from:"main", to:"qa"},
+  {id:"e-main-sec", from:"main", to:"sec"},
+];
+const LSKEY = "maple-viewer-layout-v1";
+const center = (id) => { const e=nodeEls[id]; return {x:e.base.x+e.off.x, y:e.base.y+e.off.y, r:e.r}; };
+function edgePath(a,b){
+  const dx=b.x-a.x, dy=b.y-a.y, len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len;
+  const x1=a.x+ux*(a.r+4),  y1=a.y+uy*(a.r+4);
+  const x2=b.x-ux*(b.r+8),  y2=b.y-uy*(b.r+8);
+  const mx=(x1+x2)/2, my=(y1+y2)/2, bow=Math.min(46, len*0.14);
+  return `M${x1.toFixed(1)},${y1.toFixed(1)} Q${(mx-uy*bow).toFixed(1)},${(my+ux*bow).toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}`;
+}
+function layoutEdges(){ for(const ed of EDGES){ const p=document.getElementById(ed.id); if(p) p.setAttribute("d", edgePath(center(ed.from), center(ed.to))); } }
+const applyOff = (id) => nodeEls[id].g.setAttribute("transform", `translate(${nodeEls[id].off.x.toFixed(1)},${nodeEls[id].off.y.toFixed(1)})`);
+function saveLayout(){ const o={}; for(const n of NODES){ const f=nodeEls[n.id].off; if(f.x||f.y) o[n.id]=f; } try{ localStorage.setItem(LSKEY, JSON.stringify(o)); }catch{} }
+function loadLayout(){ let o={}; try{ o=JSON.parse(localStorage.getItem(LSKEY)||"{}"); }catch{} for(const n of NODES){ const s=o[n.id]; if(s){ nodeEls[n.id].off={x:+s.x||0,y:+s.y||0}; applyOff(n.id); } } }
+function resetLayout(){ for(const n of NODES){ nodeEls[n.id].off={x:0,y:0}; applyOff(n.id); } layoutEdges(); try{ localStorage.removeItem(LSKEY); }catch{} }
+
+let drag=null;
+function toSVG(evt){ const pt=svg.createSVGPoint(); pt.x=evt.clientX; pt.y=evt.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+for(const n of NODES){
+  const g = nodeEls[n.id].g; g.style.cursor="grab";
+  g.addEventListener("pointerdown",(e)=>{
+    e.preventDefault(); const p=toSVG(e);
+    drag={id:n.id, sx:p.x, sy:p.y, ox:nodeEls[n.id].off.x, oy:nodeEls[n.id].off.y, moved:false};
+    g.setPointerCapture(e.pointerId); g.style.cursor="grabbing";
+  });
+  g.addEventListener("pointermove",(e)=>{
+    if(!drag||drag.id!==n.id) return; const p=toSVG(e);
+    nodeEls[n.id].off={x:drag.ox+(p.x-drag.sx), y:drag.oy+(p.y-drag.sy)};
+    drag.moved=true; applyOff(n.id); layoutEdges();
+  });
+  const end=(e)=>{ if(!drag||drag.id!==n.id) return; const moved=drag.moved; drag=null; g.style.cursor="grab"; try{g.releasePointerCapture(e.pointerId);}catch{} if(moved) saveLayout(); };
+  g.addEventListener("pointerup",end); g.addEventListener("pointercancel",end);
+}
+loadLayout(); layoutEdges();
 
 const TOOL_ICON = {
   Read:"📄", Edit:"✎", Write:"✎", NotebookEdit:"✎",
@@ -435,6 +481,7 @@ async function loadRun(id){
     ticker.innerHTML = '<span class="empty">Press ▶ to replay.</span>';
   }catch(err){ cap.textContent = String(err); }
 }
+el("resetlayout").addEventListener("click", resetLayout);
 el("runsel").addEventListener("change", (e)=>{ liveOff(); loadRun(e.target.value); });
 el("reload").addEventListener("click", loadRuns);
 loadRuns();
