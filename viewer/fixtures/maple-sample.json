@@ -3,6 +3,7 @@
   "title": "Add rate limiting to the public API",
   "isMapleRun": true,
   "agents": [
+    "maple-researcher",
     "maple-architect",
     "maple-advisor",
     "maple-engineer",
@@ -10,7 +11,7 @@
     "maple-qa",
     "maple-security"
   ],
-  "count": 35,
+  "count": 41,
   "events": [
     {
       "seq": 0,
@@ -32,6 +33,60 @@
       "seq": 2,
       "t": "2026-07-25T09:00:08.000Z",
       "kind": "agent_spawn",
+      "agent": "maple-researcher",
+      "agentType": "maple-researcher",
+      "tool": "Agent",
+      "target": "maple-researcher",
+      "text": "How does the current API middleware work?"
+    },
+    {
+      "seq": 3,
+      "t": "2026-07-25T09:00:12.000Z",
+      "kind": "agent_tool",
+      "agent": "maple-researcher",
+      "agentType": "maple-researcher",
+      "tool": "Grep",
+      "target": "/app.use\\(/"
+    },
+    {
+      "seq": 4,
+      "t": "2026-07-25T09:00:16.000Z",
+      "kind": "agent_tool",
+      "agent": "maple-researcher",
+      "agentType": "maple-researcher",
+      "tool": "Read",
+      "target": "api/middleware/index.ts"
+    },
+    {
+      "seq": 5,
+      "t": "2026-07-25T09:00:20.000Z",
+      "kind": "agent_tool",
+      "agent": "maple-researcher",
+      "agentType": "maple-researcher",
+      "tool": "Bash",
+      "target": "git log -- api/middleware"
+    },
+    {
+      "seq": 6,
+      "t": "2026-07-25T09:00:24.000Z",
+      "kind": "agent_tool",
+      "agent": "maple-researcher",
+      "agentType": "maple-researcher",
+      "tool": "WebFetch",
+      "target": "redis.io/docs/rate-limiting"
+    },
+    {
+      "seq": 7,
+      "t": "2026-07-25T09:00:28.000Z",
+      "kind": "agent_result",
+      "agent": "maple-researcher",
+      "agentType": "maple-researcher",
+      "text": "middleware chain mapped, 4 cited sources"
+    },
+    {
+      "seq": 8,
+      "t": "2026-07-25T09:00:32.000Z",
+      "kind": "agent_spawn",
       "agent": "maple-architect",
       "agentType": "maple-architect",
       "tool": "Agent",
@@ -39,8 +94,8 @@
       "text": "Spec + plan for rate limiting"
     },
     {
-      "seq": 3,
-      "t": "2026-07-25T09:00:12.000Z",
+      "seq": 9,
+      "t": "2026-07-25T09:00:36.000Z",
       "kind": "agent_tool",
       "agent": "maple-architect",
       "agentType": "maple-architect",
@@ -48,8 +103,8 @@
       "target": "api/router.ts"
     },
     {
-      "seq": 4,
-      "t": "2026-07-25T09:00:16.000Z",
+      "seq": 10,
+      "t": "2026-07-25T09:00:40.000Z",
       "kind": "agent_tool",
       "agent": "maple-architect",
       "agentType": "maple-architect",
@@ -57,8 +112,8 @@
       "target": "/middleware/"
     },
     {
-      "seq": 5,
-      "t": "2026-07-25T09:00:20.000Z",
+      "seq": 11,
+      "t": "2026-07-25T09:00:44.000Z",
       "kind": "agent_tool",
       "agent": "maple-architect",
       "agentType": "maple-architect",
@@ -66,24 +121,24 @@
       "target": "token bucket vs sliding window"
     },
     {
-      "seq": 6,
-      "t": "2026-07-25T09:00:24.000Z",
+      "seq": 12,
+      "t": "2026-07-25T09:00:48.000Z",
       "kind": "agent_tool",
       "agent": "maple-architect",
       "agentType": "maple-architect",
       "tool": "TodoWrite"
     },
     {
-      "seq": 7,
-      "t": "2026-07-25T09:00:28.000Z",
+      "seq": 13,
+      "t": "2026-07-25T09:00:52.000Z",
       "kind": "agent_result",
       "agent": "maple-architect",
       "agentType": "maple-architect",
       "text": "plan written"
     },
     {
-      "seq": 8,
-      "t": "2026-07-25T09:00:32.000Z",
+      "seq": 14,
+      "t": "2026-07-25T09:00:56.000Z",
       "kind": "agent_spawn",
       "agent": "maple-advisor",
       "agentType": "maple-advisor",
@@ -92,8 +147,8 @@
       "text": "Redis vs in-memory trade-off"
     },
     {
-      "seq": 9,
-      "t": "2026-07-25T09:00:36.000Z",
+      "seq": 15,
+      "t": "2026-07-25T09:01:00.000Z",
       "kind": "agent_tool",
       "agent": "maple-advisor",
       "agentType": "maple-advisor",
@@ -101,8 +156,8 @@
       "target": "plan.md"
     },
     {
-      "seq": 10,
-      "t": "2026-07-25T09:00:40.000Z",
+      "seq": 16,
+      "t": "2026-07-25T09:01:04.000Z",
       "kind": "agent_tool",
       "agent": "maple-advisor",
       "agentType": "maple-advisor",
@@ -110,16 +165,16 @@
       "target": "/deploy/"
     },
     {
-      "seq": 11,
-      "t": "2026-07-25T09:00:44.000Z",
+      "seq": 17,
+      "t": "2026-07-25T09:01:08.000Z",
       "kind": "agent_result",
       "agent": "maple-advisor",
       "agentType": "maple-advisor",
       "text": "verdict: Redis, multi-instance"
     },
     {
-      "seq": 12,
-      "t": "2026-07-25T09:00:48.000Z",
+      "seq": 18,
+      "t": "2026-07-25T09:01:12.000Z",
       "kind": "agent_spawn",
       "agent": "maple-engineer",
       "agentType": "maple-engineer",
@@ -128,8 +183,8 @@
       "text": "Implement the plan"
     },
     {
-      "seq": 13,
-      "t": "2026-07-25T09:00:52.000Z",
+      "seq": 19,
+      "t": "2026-07-25T09:01:16.000Z",
       "kind": "agent_tool",
       "agent": "maple-engineer",
       "agentType": "maple-engineer",
@@ -137,8 +192,8 @@
       "target": "api/router.ts"
     },
     {
-      "seq": 14,
-      "t": "2026-07-25T09:00:56.000Z",
+      "seq": 20,
+      "t": "2026-07-25T09:01:20.000Z",
       "kind": "agent_tool",
       "agent": "maple-engineer",
       "agentType": "maple-engineer",
@@ -146,8 +201,8 @@
       "target": "rateLimiter.test.ts"
     },
     {
-      "seq": 15,
-      "t": "2026-07-25T09:01:00.000Z",
+      "seq": 21,
+      "t": "2026-07-25T09:01:24.000Z",
       "kind": "agent_tool",
       "agent": "maple-engineer",
       "agentType": "maple-engineer",
@@ -155,8 +210,8 @@
       "target": "npm test — 3 failing"
     },
     {
-      "seq": 16,
-      "t": "2026-07-25T09:01:04.000Z",
+      "seq": 22,
+      "t": "2026-07-25T09:01:28.000Z",
       "kind": "agent_tool",
       "agent": "maple-engineer",
       "agentType": "maple-engineer",
@@ -164,8 +219,8 @@
       "target": "rateLimiter.ts"
     },
     {
-      "seq": 17,
-      "t": "2026-07-25T09:01:08.000Z",
+      "seq": 23,
+      "t": "2026-07-25T09:01:32.000Z",
       "kind": "agent_tool",
       "agent": "maple-engineer",
       "agentType": "maple-engineer",
@@ -173,8 +228,8 @@
       "target": "router.ts"
     },
     {
-      "seq": 18,
-      "t": "2026-07-25T09:01:12.000Z",
+      "seq": 24,
+      "t": "2026-07-25T09:01:36.000Z",
       "kind": "agent_tool",
       "agent": "maple-engineer",
       "agentType": "maple-engineer",
@@ -182,16 +237,16 @@
       "target": "npm test — all pass"
     },
     {
-      "seq": 19,
-      "t": "2026-07-25T09:01:16.000Z",
+      "seq": 25,
+      "t": "2026-07-25T09:01:40.000Z",
       "kind": "agent_result",
       "agent": "maple-engineer",
       "agentType": "maple-engineer",
       "text": "escalating: concurrent token refill race"
     },
     {
-      "seq": 20,
-      "t": "2026-07-25T09:01:20.000Z",
+      "seq": 26,
+      "t": "2026-07-25T09:01:44.000Z",
       "kind": "agent_spawn",
       "agent": "maple-engineer-hard",
       "agentType": "maple-engineer-hard",
@@ -200,8 +255,8 @@
       "text": "Fix refill race under concurrency"
     },
     {
-      "seq": 21,
-      "t": "2026-07-25T09:01:24.000Z",
+      "seq": 27,
+      "t": "2026-07-25T09:01:48.000Z",
       "kind": "agent_tool",
       "agent": "maple-engineer-hard",
       "agentType": "maple-engineer-hard",
@@ -209,8 +264,8 @@
       "target": "rateLimiter.ts"
     },
     {
-      "seq": 22,
-      "t": "2026-07-25T09:01:28.000Z",
+      "seq": 28,
+      "t": "2026-07-25T09:01:52.000Z",
       "kind": "agent_tool",
       "agent": "maple-engineer-hard",
       "agentType": "maple-engineer-hard",
@@ -218,8 +273,8 @@
       "target": "rateLimiter.ts"
     },
     {
-      "seq": 23,
-      "t": "2026-07-25T09:01:32.000Z",
+      "seq": 29,
+      "t": "2026-07-25T09:01:56.000Z",
       "kind": "agent_tool",
       "agent": "maple-engineer-hard",
       "agentType": "maple-engineer-hard",
@@ -227,16 +282,16 @@
       "target": "npm test -- --stress"
     },
     {
-      "seq": 24,
-      "t": "2026-07-25T09:01:36.000Z",
+      "seq": 30,
+      "t": "2026-07-25T09:02:00.000Z",
       "kind": "agent_result",
       "agent": "maple-engineer-hard",
       "agentType": "maple-engineer-hard",
       "text": "atomic Lua refill, race gone"
     },
     {
-      "seq": 25,
-      "t": "2026-07-25T09:01:40.000Z",
+      "seq": 31,
+      "t": "2026-07-25T09:02:04.000Z",
       "kind": "agent_spawn",
       "agent": "maple-qa",
       "agentType": "maple-qa",
@@ -245,8 +300,8 @@
       "text": "Verify vs plan"
     },
     {
-      "seq": 26,
-      "t": "2026-07-25T09:01:44.000Z",
+      "seq": 32,
+      "t": "2026-07-25T09:02:08.000Z",
       "kind": "agent_tool",
       "agent": "maple-qa",
       "agentType": "maple-qa",
@@ -254,8 +309,8 @@
       "target": "rateLimiter.ts"
     },
     {
-      "seq": 27,
-      "t": "2026-07-25T09:01:48.000Z",
+      "seq": 33,
+      "t": "2026-07-25T09:02:12.000Z",
       "kind": "agent_tool",
       "agent": "maple-qa",
       "agentType": "maple-qa",
@@ -263,8 +318,8 @@
       "target": "npm test — 42 pass"
     },
     {
-      "seq": 28,
-      "t": "2026-07-25T09:01:52.000Z",
+      "seq": 34,
+      "t": "2026-07-25T09:02:16.000Z",
       "kind": "agent_tool",
       "agent": "maple-qa",
       "agentType": "maple-qa",
@@ -272,16 +327,16 @@
       "target": "npm run build"
     },
     {
-      "seq": 29,
-      "t": "2026-07-25T09:01:56.000Z",
+      "seq": 35,
+      "t": "2026-07-25T09:02:20.000Z",
       "kind": "agent_result",
       "agent": "maple-qa",
       "agentType": "maple-qa",
       "text": "PASS"
     },
     {
-      "seq": 30,
-      "t": "2026-07-25T09:02:00.000Z",
+      "seq": 36,
+      "t": "2026-07-25T09:02:24.000Z",
       "kind": "agent_spawn",
       "agent": "maple-security",
       "agentType": "maple-security",
@@ -290,8 +345,8 @@
       "text": "Audit the diff"
     },
     {
-      "seq": 31,
-      "t": "2026-07-25T09:02:04.000Z",
+      "seq": 37,
+      "t": "2026-07-25T09:02:28.000Z",
       "kind": "agent_tool",
       "agent": "maple-security",
       "agentType": "maple-security",
@@ -299,8 +354,8 @@
       "target": "rateLimiter.ts"
     },
     {
-      "seq": 32,
-      "t": "2026-07-25T09:02:08.000Z",
+      "seq": 38,
+      "t": "2026-07-25T09:02:32.000Z",
       "kind": "agent_tool",
       "agent": "maple-security",
       "agentType": "maple-security",
@@ -308,16 +363,16 @@
       "target": "/req.ip|X-Forwarded-For/"
     },
     {
-      "seq": 33,
-      "t": "2026-07-25T09:02:12.000Z",
+      "seq": 39,
+      "t": "2026-07-25T09:02:36.000Z",
       "kind": "agent_result",
       "agent": "maple-security",
       "agentType": "maple-security",
       "text": "PASS — no bypass via spoofed header"
     },
     {
-      "seq": 34,
-      "t": "2026-07-25T09:02:16.000Z",
+      "seq": 40,
+      "t": "2026-07-25T09:02:40.000Z",
       "kind": "main_tool",
       "agent": "orchestrator",
       "agentType": "orchestrator",

@@ -13,6 +13,13 @@ const rows = [
   ["run_start", "orchestrator", "", "", "Add token-bucket rate limiting to the public API"],
   ["main_tool", "orchestrator", "TodoWrite", "", ""],
 
+  ["agent_spawn", "maple-researcher", "Agent", "maple-researcher", "How does the current API middleware work?"],
+  ["agent_tool", "maple-researcher", "Grep", "/app.use\\(/", ""],
+  ["agent_tool", "maple-researcher", "Read", "api/middleware/index.ts", ""],
+  ["agent_tool", "maple-researcher", "Bash", "git log -- api/middleware", ""],
+  ["agent_tool", "maple-researcher", "WebFetch", "redis.io/docs/rate-limiting", ""],
+  ["agent_result", "maple-researcher", "", "", "middleware chain mapped, 4 cited sources"],
+
   ["agent_spawn", "maple-architect", "Agent", "maple-architect", "Spec + plan for rate limiting"],
   ["agent_tool", "maple-architect", "Read", "api/router.ts", ""],
   ["agent_tool", "maple-architect", "Grep", "/middleware/", ""],

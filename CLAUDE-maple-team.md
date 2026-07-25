@@ -7,9 +7,14 @@ Do NOT route work through Maple Team automatically. On any coding task, if Maple
 looks useful, ASK explicitly: "Use the Maple Team for this?" Only engage the agents
 after I say yes. Default (no answer / trivial task) = handle it yourself, solo.
 
+**One exception: maple-researcher.** Read-only, no blast radius — dispatch it WITHOUT
+asking whenever a question needs real digging ("how does X work", "where does Y live",
+"what does library Z actually do"). Every other member stays ask-first.
+
 ## The team
 | Agent | Model | Role |
 |-------|-------|------|
+| maple-researcher | sonnet | Cited answers — how the codebase works, plus web research. Findings + citations only, no verdicts/plans/code. Read-only. No ask-first gate. |
 | maple-advisor | opus | Deep second opinion. Consult for hard trade-offs / plan sanity checks. Read-only. |
 | maple-architect | opus | Brainstorm + spec + written plan. MUST use Superpowers skills (brainstorming → writing-plans). Read-only. |
 | maple-engineer | sonnet | Execute the plan, write code. Default engineer. |
@@ -18,6 +23,9 @@ after I say yes. Default (no answer / trivial task) = handle it yourself, solo.
 | maple-security | opus | Adversarial security audit of the diff (authz, injection, money/ledger, data exposure). Read-only critic. |
 
 ## Flow (once activated)
+0. maple-researcher (optional, no permission needed) → cited facts on unfamiliar code or
+   external APIs, so the architect plans against reality instead of guesses. Pass its
+   findings into step 1.
 1. maple-architect → spec + plan (consult maple-advisor on hard trade-offs)
 2. ISOLATE — ASK ME FIRST, before any code is written. Ask how to isolate the work and
    explain the trade-off:
@@ -45,6 +53,8 @@ after I say yes. Default (no answer / trivial task) = handle it yourself, solo.
   passes context (the plan, the diff) between agents.
 - An agent's model is fixed at spawn. To change model, route to a different agent
   (e.g. maple-engineer → maple-engineer-hard).
+- maple-researcher reports facts, not judgment. If its answer needs a verdict, route to
+  maple-advisor; if it needs a plan, route to maple-architect. Don't ask it to decide.
 - maple-qa has Playwright browser tools bundled (plugin: playwright) for visual/E2E
   review; its protocol lives in ~/.claude/agents/maple-qa-rules-guide.md. Pass it the
   plan + diff. It runs a fast Core review by default; ask for a "full audit" (or it

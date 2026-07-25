@@ -16,6 +16,7 @@ file with YAML frontmatter that Claude loads as a callable agent type.
 
 | Agent | Model | Role |
 |-------|-------|------|
+| `maple-researcher` | sonnet | Cited answers — how the codebase works, plus web research. Findings + citations, never verdicts/plans/code. Read-only, no ask-first gate. |
 | `maple-advisor` | opus | Deep second opinion — hard trade-offs, plan sanity checks. Read-only. |
 | `maple-architect` | opus | Brainstorm + spec + written plan before any code. Read-only. |
 | `maple-engineer` | sonnet | Execute the plan, write code. Default engineer. |
@@ -56,6 +57,8 @@ machine; a **user**/`--dest` install writes absolute paths.
 
 ## Flow (once activated)
 
+0. `maple-researcher` (optional, no permission needed) → cited facts on unfamiliar code or
+   external APIs, so the architect plans against reality. Feed its findings into step 1.
 1. `maple-architect` → spec + plan (consult `maple-advisor` on hard trade-offs).
 2. **Isolate — ask first.** Before any code is written, ask the user how to isolate the work and
    explain the trade-off:
@@ -83,12 +86,18 @@ machine; a **user**/`--dest` install writes absolute paths.
 These agents are opt-in. On a coding task, ask before routing work through the team; engage
 only after a yes. Trivial tasks: handle solo.
 
+**Exception: `maple-researcher`.** Read-only with no blast radius, so the main thread may
+dispatch it without asking whenever a question needs real digging. Every other member stays
+ask-first.
+
 ## Claude Code constraints
 
 - Subagents cannot call other subagents. The **main thread** orchestrates all routing and
   passes context (the plan, the diff) between agents.
 - An agent's model is fixed at spawn. To change model, route to a different agent
   (`maple-engineer` → `maple-engineer-hard`).
+- `maple-researcher` reports facts, not judgment. Needs a verdict → `maple-advisor`; needs a
+  plan → `maple-architect`.
 - `maple-qa` bundles Playwright browser tools (`mcp__plugin_playwright_playwright__*` — needs
   the `playwright` Claude Code plugin installed) for visual/E2E review. It is round-aware via
   `docs/qa-reports/`, and cannot ask questions mid-run — relay its "Clarifications Needed"

@@ -6,7 +6,7 @@
 <title>Maple Team — How It Works</title>
 
 <!-- SEO -->
-<meta name="description" content="Maple Team — six specialist AI agents, one orchestrator. An animated walkthrough of the pipeline: architect plans, advisor weighs in, engineers build, QA breaks it and Security audits it. Nothing ships unproven.">
+<meta name="description" content="Maple Team — seven specialist AI agents, one orchestrator. An animated walkthrough of the pipeline: the researcher digs up cited facts, architect plans, advisor weighs in, engineers build, QA breaks it and Security audits it. Nothing ships unproven.">
 <meta name="author" content="RJ Baquirin">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#120c09">
@@ -15,7 +15,7 @@
 <!-- Open Graph (Facebook / LinkedIn / Slack / Discord) -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Maple Team — How It Works">
-<meta property="og:description" content="Six specialist AI agents, one orchestrator. Watch a task travel the pipeline: plan, second opinion, build, escalate, QA verdict, security audit.">
+<meta property="og:description" content="Seven specialist AI agents, one orchestrator. Watch a task travel the pipeline: research, plan, second opinion, build, escalate, QA verdict, security audit.">
 <meta property="og:site_name" content="Maple Team">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://yourjhay.github.io/maple-team/">
@@ -26,7 +26,7 @@
 <!-- Twitter / X -->
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Maple Team — How It Works">
-<meta name="twitter:description" content="Six specialist AI agents, one orchestrator. Animated pipeline: plan, second opinion, build, escalate, QA verdict, security audit.">
+<meta name="twitter:description" content="Seven specialist AI agents, one orchestrator. Animated pipeline: research, plan, second opinion, build, escalate, QA verdict, security audit.">
 <meta name="twitter:image" content="https://yourjhay.github.io/maple-team/maple-render.png">
 
 <!-- Favicon (inline, no extra file needed) -->
@@ -40,6 +40,7 @@
     --ink:#f3e8da; --dim:#b8a08f; --faint:#7d685a;
     --ember:#e8613c; --amber:#ffb454;
     --c-advisor:#b48ee8; --c-architect:#6fc48b; --c-eng:#5fa8f5; --c-hard:#7f8ef0; --c-qa:#ffb454; --c-sec:#e5484d;
+    --c-res:#4ec9c0;
     --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -322,9 +323,9 @@
 <div class="wrap">
 
   <header>
-    <div class="eyebrow">~/.claude/agents · six specialists · one orchestrator</div>
+    <div class="eyebrow">~/.claude/agents · seven specialists · one orchestrator</div>
     <h1>Maple <span class="leaf">🍁</span> Team</h1>
-    <p class="sub">A plan is drawn, a second opinion is taken, code is built and broken on purpose — and nothing ships until QA and Security sign off. You hold the veto: the team never engages without asking first.</p>
+    <p class="sub">Facts are dug up and cited, a plan is drawn, a second opinion is taken, code is built and broken on purpose — and nothing ships until QA and Security sign off. You hold the veto: the team never engages without asking first.</p>
     <a class="repo" href="https://github.com/yourjhay/maple-team" target="_blank" rel="noopener">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
       View on GitHub ↗
@@ -335,11 +336,12 @@
     <span class="kicker">Live run</span>
     <h2>Watch a task travel the pipeline</h2>
     <div class="stage">
-      <svg id="diagram" viewBox="0 0 1200 690" role="img" aria-label="Diagram of the Maple Team workflow: you approve, the orchestrator routes work between architect, advisor, engineers and QA">
+      <svg id="diagram" viewBox="0 0 1200 690" role="img" aria-label="Diagram of the Maple Team workflow: you approve, the orchestrator routes work between researcher, architect, advisor, engineers, QA and Security">
         <!-- edges -->
         <path id="e-you-main"  class="edge" d="M600,108 L600,196"/>
         <path id="e-main-arch" class="edge" d="M556,268 C420,340 300,380 246,432"/>
         <path id="e-main-adv"  class="edge" d="M656,232 C790,222 900,222 986,230"/>
+        <path id="e-main-res"  class="edge" d="M544,232 C410,222 300,222 214,230"/>
         <path id="e-main-eng"  class="edge" d="M588,290 C570,350 556,390 552,428"/>
         <path id="e-eng-hard"  class="edge esc" d="M610,492 C680,530 730,552 782,568"/>
         <path id="e-main-qa"   class="edge" d="M652,262 C820,330 940,390 992,436"/>
@@ -352,7 +354,7 @@
       <div class="transport">
         <button id="playBtn" aria-label="Pause simulation">❚❚</button>
         <div class="capbox" id="capbox" aria-live="polite">
-          <div class="capstep" id="capstep">Step 1 of 9</div>
+          <div class="capstep" id="capstep">Step 1 of 10</div>
           <div class="captext" id="captext">…</div>
         </div>
         <div class="dots" id="dots" role="tablist" aria-label="Simulation steps"></div>
@@ -371,8 +373,19 @@
 
   <section>
     <span class="kicker">The roster</span>
-    <h2>Six dossiers</h2>
+    <h2>Seven dossiers</h2>
     <div class="grid">
+      <div class="card" style="--ac:var(--c-res); --glow:var(--c-res)">
+        <div class="sigil">📚</div>
+        <h3>maple-researcher</h3>
+        <div class="badges">
+          <span class="badge model">Sonnet</span>
+          <span class="badge">read-only</span>
+          <span class="badge">no ask-first gate</span>
+        </div>
+        <p>Answers questions with receipts. How a subsystem actually works, where behaviour lives, what a library really says — every claim carries a <code>file:line</code> or a URL. Facts only: no verdicts, no plans, no code.</p>
+        <div class="tools">Read · Grep · Glob · Bash · WebSearch · WebFetch</div>
+      </div>
       <div class="card" style="--ac:var(--c-architect); --glow:var(--c-architect)">
         <div class="sigil">📐</div>
         <h3>maple-architect</h3>
@@ -442,7 +455,7 @@
     <div class="laws">
       <div class="law">
         <b>Ask first, always</b>
-        <span>The team never auto-engages. On a coding task the orchestrator asks “Use Maple Team for this?” — no yes, no team.</span>
+        <span>The team never auto-engages. On a coding task the orchestrator asks “Use Maple Team for this?” — no yes, no team. One exception: the researcher is read-only, so questions can go straight to it.</span>
       </div>
       <div class="law">
         <b>Agents can't call agents</b>
@@ -466,7 +479,7 @@
         </li>
         <li>
           <h3>Run the installer — pick a scope</h3>
-          <p>It asks: <b>User</b> (<code>~/.claude/agents</code>, personal, every project) or <b>Project</b> (<code>&lt;repo&gt;/.claude/agents</code>, checked into one repo and shared with your team). Project prompts for the repo path and validates it. Either way it copies the six <code>maple-*</code> agents and their guide playbooks, then rewrites each guide path to suit the scope.</p>
+          <p>It asks: <b>User</b> (<code>~/.claude/agents</code>, personal, every project) or <b>Project</b> (<code>&lt;repo&gt;/.claude/agents</code>, checked into one repo and shared with your team). Project prompts for the repo path and validates it. Either way it copies the seven <code>maple-*</code> agents and their guide playbooks, then rewrites each guide path to suit the scope.</p>
         </li>
         <li>
           <h3>Wire up <code>CLAUDE.md</code></h3>
@@ -541,6 +554,7 @@
     {id:"you",  x:600,  y:70,  r:38, color:"#e8613c", glyph:"👤", label:"YOU",            chip:"holds the veto"},
     {id:"main", x:600,  y:232, r:44, color:"#ffb454", glyph:"🍁", label:"Orchestrator",   chip:"main thread"},
     {id:"adv",  x:1040, y:232, r:40, color:"#b48ee8", glyph:"🦉", label:"Advisor",        chip:"opus · 2nd opinion"},
+    {id:"res",  x:160,  y:232, r:40, color:"#4ec9c0", glyph:"📚", label:"Researcher",     chip:"sonnet · cited facts"},
     {id:"arch", x:216,  y:470, r:42, color:"#6fc48b", glyph:"📐", label:"Architect",      chip:"opus · ultrathink"},
     {id:"eng",  x:556,  y:470, r:42, color:"#5fa8f5", glyph:"🔨", label:"Engineer",       chip:"sonnet · TDD"},
     {id:"hard", x:816,  y:588, r:36, color:"#7f8ef0", glyph:"⚒️", label:"Engineer-Hard",  chip:"opus · escalation"},
@@ -581,6 +595,8 @@
      active:["you","main"], pulses:[["e-you-main",false,"#e8613c"]]},
     {t:"Ask-first",        d:"“Use the Maple Team for this?” — nothing moves until you say yes.",
      active:["you","main"], pulses:[["e-you-main",true,"#ffb454"],["e-you-main",false,"#e8613c"]]},
+    {t:"Recon",            d:"Unfamiliar code, or an API nobody's read? The researcher digs — every claim comes back with a file:line or a URL. No permission needed: read-only, no blast radius.",
+     active:["main","res"], pulses:[["e-main-res",false,"#4ec9c0"],["e-main-res",true,"#4ec9c0"]]},
     {t:"The plan",         d:"Architect brainstorms, then writes a numbered plan. Superpowers skills, mandatory.",
      active:["main","arch"], pulses:[["e-main-arch",false,"#6fc48b"]]},
     {t:"Second opinion",   d:"A gnarly trade-off in the plan? The advisor weighs in — verdict first, reasons after.",

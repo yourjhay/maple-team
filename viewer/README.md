@@ -61,7 +61,7 @@ so spawns can be ordered and every tool call attributed to the right agent.
   runs for a repo by matching each transcript's `cwd` (no path-encoding assumptions).
 - `server.mjs` — serves the UI and the parsed runs. Bound to `127.0.0.1` (it exposes
   file contents and tool output — never expose it off-host).
-- `viewer.html` — maps the six `maple-*` agents onto the fixed diagram nodes and
+- `viewer.html` — maps the seven `maple-*` agents onto the fixed diagram nodes and
   replays the event stream, **paced by sequence** (not wall-clock — real runs have
   long idle gaps). Non-maple agents surface in the ticker under the orchestrator node.
 
@@ -77,6 +77,6 @@ so spawns can be ordered and every tool call attributed to the right agent.
 ## Notes
 
 - Needs a real multi-agent run to look its best; until then the sample fixture stands
-  in for a full architect→advisor→engineer→hard→qa→security flow.
+  in for a full researcher→architect→advisor→engineer→hard→qa→security flow.
 - Token-level "thinking" is not available — granularity is per tool call, which is
   what the transcripts record.

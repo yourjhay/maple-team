@@ -16,7 +16,7 @@ import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, basename, dirname } from "node:path";
 
 const MAPLE_NODES = new Set([
-  "maple-architect", "maple-advisor", "maple-engineer",
+  "maple-researcher", "maple-architect", "maple-advisor", "maple-engineer",
   "maple-engineer-hard", "maple-qa", "maple-security",
 ]);
 
