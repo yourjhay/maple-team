@@ -25,6 +25,10 @@ const PORT = parseInt(arg("--port", process.env.PORT || "4757"), 10);
 // session's cwd. Resolve --project to an absolute path so cwd matching works.
 const PROJECT = resolve(arg("--project", dirname(here)));
 const PROJECTS_ROOT = arg("--root", join(process.env.HOME, ".claude", "projects"));
+// Cap the run picker: a long-lived repo accumulates hundreds of transcripts and
+// nobody scrolls past the recent ones. Only /runs is capped — /run/<id> still
+// resolves any id, so an older run stays reachable by direct link.
+const RUN_LIMIT = Math.max(1, parseInt(arg("--limit", "20"), 10) || 20);
 const SAMPLE = join(here, "fixtures", "maple-sample.json");
 
 const MIME = { ".html": "text/html; charset=utf-8", ".mjs": "text/javascript", ".js": "text/javascript", ".json": "application/json" };
@@ -48,12 +52,13 @@ const server = createServer((req, res) => {
     if (p === "/" || p === "/index.html") return sendFile(res, join(here, "viewer.html"));
 
     if (p === "/runs") {
-      const runs = listRuns(PROJECT, PROJECTS_ROOT).map(r => ({
+      const all = listRuns(PROJECT, PROJECTS_ROOT);        // newest first
+      const runs = all.slice(0, RUN_LIMIT).map(r => ({
         id: r.id, title: r.title, mtime: r.mtime,
       }));
       // always offer the built-in sample first
       runs.unshift({ id: "sample", title: "▶ Sample maple run (demo)", mtime: Infinity });
-      return sendJSON(res, { project: PROJECT, runs });
+      return sendJSON(res, { project: PROJECT, runs, total: all.length, limit: RUN_LIMIT });
     }
 
     if (p.startsWith("/run/")) {

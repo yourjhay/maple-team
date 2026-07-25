@@ -465,7 +465,12 @@ async function loadRuns(){
   const sel = el("runsel");
   try{
     const r = await fetch("/runs"); const d = await r.json();
-    el("note").textContent = `project: ${d.project}`;
+    // the picker shows the newest `limit` runs; say so when older ones exist,
+    // so a short list doesn't read as "the server lost my runs"
+    const shown = Math.max(0, d.runs.length - 1);              // minus the sample entry
+    const trimmed = d.total != null && d.total > shown;
+    el("note").textContent = `project: ${d.project}`
+      + (trimmed ? ` · showing the latest ${shown} of ${d.total} runs` : "");
     sel.innerHTML = "";
     for(const run of d.runs){
       const o = document.createElement("option"); o.value=run.id; o.textContent=run.title; sel.appendChild(o);

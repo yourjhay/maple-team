@@ -40,7 +40,13 @@ right now (e.g. `📄 Read rateLimiter.ts`).
 `localStorage` so it persists across reloads. **⤾ layout** resets to the default arrangement.
 
 Flags: `--port N` (default 4757), `--project DIR` (repo whose runs to show; defaults to
-this repo), `--root DIR` (transcripts dir; defaults to `~/.claude/projects`).
+this repo), `--root DIR` (transcripts dir; defaults to `~/.claude/projects`),
+`--limit N` (how many recent runs the picker lists; default 20).
+
+The run picker shows the **newest 20** runs plus the sample — a long-lived repo piles up
+hundreds of transcripts and nobody scrolls that far. When older runs exist the header note
+says `showing the latest 20 of N runs`. The cap is only on the list: `/run/<id>` still
+resolves any run, and Live always follows the newest one regardless.
 
 ## How it works
 
