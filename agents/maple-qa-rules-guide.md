@@ -60,6 +60,30 @@ Log a 2-line pre-flight note: what conventions you read, whether a plan was prov
   by line. A plainly-missing requirement is Critical.
 - **Correctness** — logic, edge cases (empty/null/boundary/error paths), unsafe assumptions,
   async issues (unhandled promises, races), obvious bugs.
+- **Field validation (strict — always when the diff adds/changes any input field, form, API
+  param, or payload)** — be pedantic here; a field without explicit constraints is a finding,
+  not an oversight to let slide:
+  - **Character/length limits** — every string field has an explicit max length, and it matches
+    the DB column / API schema / spec. No limit anywhere → finding. Limit in UI but not
+    server → finding.
+  - **Datatypes & formats** — declared type actually enforced (number fields reject `"12abc"`,
+    dates reject garbage, enums reject unknown values). Silent coercion or truncation instead
+    of rejection → finding. IDs validated as the right type before use.
+  - **Required vs optional** — required fields enforced server-side (empty string and
+    whitespace-only count as missing); optional fields handle absence without crashing.
+  - **Boundaries** — 0, negatives, min−1, max, max+1, empty string, whitespace-only, very long
+    input, unicode/emoji/multibyte (length counted correctly?).
+  - **Dual-layer enforcement (both required)** — every field validated in BOTH places:
+    (1) **client-side first** — immediate feedback before submit (maxlength, type, required,
+    format checked in the form itself); a field with server-only validation and no client
+    check → finding (bad UX, round-trip to learn the rule). (2) **server-side again** —
+    the authoritative re-check; client-only validation is bypassable and does NOT count as
+    validated. Trace field → handler → persistence. Missing server layer is the worse
+    finding; missing client layer is still a finding.
+  - **Consistency** — the same field validated identically at every entry point (form, API,
+    bulk import, mobile); UI limit == API limit == DB constraint. Any mismatch → finding.
+  - **Rejection behavior** — invalid input produces a clear per-field error naming the rule
+    ("max 80 characters"), not a 500, not silent truncation, not a generic "error".
 - **Tests** — **run the suite/build yourself with Bash and quote the real output. Never trust a
   "tests pass" claim.** New public logic has tests? No `.only` / `.skip` / `xit` left in?
 - **Security-adjacent** — injection, authz/IDOR, secrets in code/logs, unsafe HTML, `Math.random`
@@ -72,17 +96,27 @@ Log a 2-line pre-flight note: what conventions you read, whether a plan was prov
   thread gave, else an obvious dev command; if you can't determine how, say so as a coverage
   gap — never guess a URL). Navigate the affected pages, screenshot key states, walk the plan's
   primary user flow, check console errors + failed network calls, spot-check a11y and mobile
-  width. Clean up tabs / dev servers you started. Can't run it → "visual review not performed:
+  width. **Probe every new/changed form field with hostile input**: over-limit strings (limit+1
+  and something huge like 10k chars), wrong datatypes in typed fields, empty + whitespace-only
+  in required fields, boundary numbers (0, negative, max+1), emoji/multibyte. Confirm the app
+  rejects with a clear per-field message — screenshot the error state; a 500, silent truncation,
+  or accepted-invalid submission is a finding. Clean up tabs / dev servers you started. Can't run it → "visual review not performed:
   <reason>", which is a coverage gap, not a PASS.
 
 ### 3. Severity rubric
 - **🟥 Critical (auto-fail)** — production impact, no judgment call: data loss/corruption;
   security breach (injection, authz bypass, secret leak, exposed PII); outage risk (infinite
   loop in hot path, crash on guaranteed input); broken public contract; a plan requirement
-  plainly not implemented; a critical-path test deleted/`.skip`ed without justification.
+  plainly not implemented; a critical-path test deleted/`.skip`ed without justification;
+  user input persisted or acted on with **no server-side validation at all** (client-only
+  checks don't count) on a field where bad data corrupts state or crashes.
 - **🟧 Warning (should fix, no auto-fail)** — type unsafety in a non-critical path; measurable
   but non-blocking perf regression; missing edge case that fails gracefully; missing tests for
-  new non-critical logic; convention deviation; code smell with a concrete fix.
+  new non-critical logic; convention deviation; code smell with a concrete fix; validation
+  limit/type mismatch across layers (UI vs API vs DB); string field with no explicit max
+  length; invalid input rejected but via 500 / generic / silent-truncation instead of a
+  per-field error; field validated server-side only with no client-side check (user gets no
+  feedback until submit).
 - **🟨 Improvement (optional)** — naming, micro-optimizations, style, non-blocking refactors.
 
 Tie-break: unsure between tiers → downgrade one. Critical is for clear-cut cases only.
@@ -154,6 +188,12 @@ Do everything in Core, **plus** the following. Skip this whole section in Core m
   OpenAPI/schema updated, consumer impact.
 - **Concurrency & consistency** — races, missing locks/transactions, double-submit, idempotency,
   read-modify-write without locking.
+- **Field validation (deep)** — enumerate EVERY new/changed field in a table: name, type,
+  required?, length limit, where enforced (UI / API / DB), rejection behavior. Any cell you
+  can't fill from code evidence is a gap. Cross-check DB schema/migrations against the
+  validation layer (column `VARCHAR(80)` but validator allows 255 → finding); check bulk
+  paths (imports, seeds, admin endpoints) bypass nothing; check validation error messages
+  are user-readable and localized if the project has i18n.
 
 ### Docs-system integration (only if `docs/context-map.json` exists; else skip silently)
 Read touched modules' docs + linked ADRs during pre-flight. Run the docs `check` script

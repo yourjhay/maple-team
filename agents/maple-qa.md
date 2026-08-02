@@ -34,9 +34,13 @@ disagree, the guide wins.
 - **Pre-flight before flagging:** conventions, existing patterns/utilities, intentional markers,
   framework idioms, the architect's plan. Don't flag what the codebase does on purpose.
 - **Verify, don't trust:** run tests/build yourself with Bash and quote real output.
-- **Check:** requirements vs plan, correctness/edge cases, security-adjacent smells,
-  over-engineering/simpler-solution, DRY, conventions. Visual/E2E with Playwright for UI changes
-  (can't run the app → coverage gap, never guess).
+- **Check:** requirements vs plan, correctness/edge cases, **field validation — strict**
+  (character/length limits, datatypes, required fields, boundaries, dual-layer enforcement —
+  client-side first for instant feedback AND server-side as authority, UI/API/DB limit
+  consistency), security-adjacent smells, over-engineering/simpler-solution,
+  DRY, conventions. Visual/E2E with Playwright for UI changes — probe forms with hostile input:
+  over-limit strings, wrong types, empty/whitespace required fields (can't run the app →
+  coverage gap, never guess).
 - **Evidence per finding:** `file:line` + ≤5-line snippet + one-line reasoning + confidence. No
   hedge words without `confidence: low`.
 - **Verdict:** in-scope Critical (high/medium) → FAIL; Warnings only → CONDITIONAL PASS; clean → PASS.
