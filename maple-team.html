@@ -525,6 +525,45 @@
     <div class="note"><b>Heads up —</b> <code>maple-qa</code> uses the <code>playwright</code> Claude Code plugin for visual / E2E review. Install that plugin if you want QA to drive a real browser; everything else works without it.</div>
   </section>
 
+  <section>
+    <span class="kicker">Stay current</span>
+    <h2>Update in two commands</h2>
+    <div class="install">
+      <ol class="steps">
+        <li>
+          <h3>Pull the latest</h3>
+          <p>From your <code>maple-team</code> clone: <code>git pull</code>. The agents and their guide playbooks all live in the repo, so that's the whole download.</p>
+        </li>
+        <li>
+          <h3>Re-run the installer — same scope as before</h3>
+          <p>It overwrites the installed <code>maple-*</code> files in place (remove-then-copy, no merge), so any edits you made to the <em>installed copies</em> are replaced — keep customizations in the repo, or re-apply them after. Installed with <code>--link</code>? Skip this step: the symlinks already point at the repo, the pull was the update.</p>
+        </li>
+        <li>
+          <h3>Restart Claude Code</h3>
+          <p>Reload to pick up the new agent definitions. Re-paste the block from <code>CLAUDE-maple-team.md</code> into your <code>CLAUDE.md</code> only if the pull changed it — <code>git diff HEAD@{1} -- CLAUDE-maple-team.md</code> tells you.</p>
+        </li>
+      </ol>
+      <div class="term">
+        <div class="bar">
+          <i></i><i></i><i></i>
+          <span class="ttl">bash</span>
+          <button class="copy" data-copy="update">Copy</button>
+        </div>
+        <pre id="update"><span class="m"># 1 · pull the latest</span>
+<span class="p">$</span> <span class="c">cd maple-team</span>
+<span class="p">$</span> <span class="c">git pull</span>
+
+<span class="m"># 2 · re-install, same scope</span>
+<span class="p">$</span> <span class="c">./install.sh --user</span>
+<span class="m">  # or: ./install.sh --project DIR</span>
+<span class="m">  # --link installs: pull alone did it</span>
+
+<span class="m"># 3 · restart Claude Code</span></pre>
+      </div>
+    </div>
+    <div class="note"><b>Not sure what changed?</b> Run <code>./install.sh --dry-run</code> after the pull — it previews every file it would touch without writing a thing.</div>
+  </section>
+
   <section class="inspire">
     <span class="kicker">Lineage</span>
     <h2>Named for a guild of eight</h2>
