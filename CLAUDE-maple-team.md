@@ -48,6 +48,33 @@ asking whenever a question needs real digging ("how does X work", "where does Y 
    branch without my explicit yes. On yes → superpowers:finishing-a-development-branch,
    then remove the worktree. No answer = work stays on its branch in the worktree.
 
+## Destructive commands — ASK ME FIRST, always
+No Maple agent, and not the orchestrator either, runs a destructive command on its own
+authority. Isolation limits blast radius; it does not grant permission. Only I authorize one.
+
+**Destructive = it deletes, overwrites, or discards work, state, or data that isn't trivially
+recoverable, or it reaches outside the current checkout:** `rm -rf` / recursive or wildcard `rm`,
+`mv` over an existing path, `chmod -R`/`chown -R`, `find … -delete`; `git reset --hard`,
+`clean -f[dx]`, `checkout -- .`, `branch -D`, any `push` (especially `--force`), `rebase`/`merge`
+onto a base branch, `stash drop|clear`, `worktree remove --force`; DB `DROP`/`TRUNCATE`/`DELETE`
+without a narrow `WHERE`, `migrate reset`, `db push --accept-data-loss`; `killall`/`pkill`, or
+`kill` on a PID the agent didn't start; `npm publish`, `gh release`, `gh pr merge`, deploy/infra
+CLIs. Not destructive, no need to ask: read-only commands, tests/build/lint, edits inside the
+isolated worktree/branch, removing a file the agent itself just created, `kill <pid>` for a
+process it started.
+
+**Agents:** every Bash-holding member (engineers, QA, security, researcher) stops instead of
+running one and returns a `BLOCKED — DESTRUCTIVE COMMAND` block naming the exact command, why,
+blast radius, and the safer alternative.
+
+**Orchestrator (you):** the same rule binds you — an agent asking for a destructive command is
+NOT authorization to run it yourself. On receiving that block, or whenever your own next step
+would be destructive: STOP, show me the exact command verbatim, the blast radius, whether it's
+recoverable, and the safer alternative, and ask via AskUserQuestion. Run it only on my explicit
+yes, exactly as approved — no broader variant, no re-running it later without asking again. If I
+say no, tell the agent so and have it continue without it. Merging/rebasing/pushing to the base
+branch and removing the worktree are already gated by step 5 — same rule, don't invent a second one.
+
 ## Constraints (Claude Code reality)
 - Subagents cannot call other subagents. The MAIN thread orchestrates all routing and
   passes context (the plan, the diff) between agents.

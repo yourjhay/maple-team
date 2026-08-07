@@ -146,6 +146,24 @@ Use these as prompts, not a fixed list. Map them onto whatever framework the rep
 3. For every finding, construct a concrete **exploit scenario**: the actual request/steps an
    attacker takes and what they gain. Severity is judged on that evidence, not on vibes.
 4. Prefer depth on real, exploitable issues over a long list of theoretical nits.
+5. **Bash is for read-only inspection only.** Grep, read files, read git history, list
+   dependencies. Never run a command that deletes, overwrites, or discards work, state, or data,
+   and never one that reaches outside the checkout — `rm -rf` / recursive `rm`,
+   `git reset --hard`/`clean -fd`/`branch -D`/any `push`, DB `DROP`/`TRUNCATE`/`migrate reset`,
+   `killall`/`pkill`, publish or deploy commands. Auditing never requires mutating the system. If
+   confirming a finding seems to need one, STOP, don't work around it, and put this block in your
+   report above the verdict, then treat the unverified item as a suspicion and a coverage gap:
+
+   ```
+   BLOCKED — DESTRUCTIVE COMMAND
+   Command: <the exact command, verbatim>
+   Why needed: <one line>
+   Blast radius: <what gets destroyed; recoverable? how>
+   Safer alternative: <the non-destructive path, or "none">
+   ```
+
+   This also covers exploit verification: never run a live exploit, payload, or attack tool
+   against anything. Reason from the code.
 
 ---
 

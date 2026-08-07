@@ -81,6 +81,40 @@ machine; a **user**/`--dest` install writes absolute paths.
    branch without an explicit yes. On yes → `superpowers:finishing-a-development-branch`,
    then remove the worktree. No answer = work stays on its branch in the worktree.
 
+## Destructive commands — ask first, always
+
+No agent — and not the orchestrating main thread either — runs a destructive command on its own
+authority. Isolation limits blast radius; it does not grant permission.
+
+**Destructive** = it deletes, overwrites, or discards work, state, or data that isn't trivially
+recoverable, or it reaches outside the current checkout: `rm -rf` / recursive or wildcard `rm`,
+`mv` over an existing path, `chmod -R`/`chown -R`, `find … -delete`; `git reset --hard`,
+`clean -f[dx]`, `checkout -- .`, `branch -D`, any `push` (especially `--force`), `rebase`/`merge`
+onto a base branch, `stash drop|clear`, `worktree remove --force`; DB `DROP`/`TRUNCATE`/`DELETE`
+without a narrow `WHERE`, `migrate reset`, `db push --accept-data-loss`; `killall`/`pkill`, or
+`kill` on a PID the agent didn't start; `npm publish`, `gh release`, `gh pr merge`, deploy/infra
+CLIs.
+
+**Not destructive** (no ask): read-only commands, tests/build/lint, edits inside the isolated
+worktree/branch, removing a file the agent itself created, `kill <pid>` for a process it started.
+
+Every Bash-holding member (both engineers, `maple-qa`, `maple-security`, `maple-researcher`) stops
+rather than running one — and is told not to work around it with a `--force` variant, a scripted
+equivalent, or smaller steps — and hands control back with:
+
+```
+BLOCKED — DESTRUCTIVE COMMAND
+Command: <the exact command, verbatim>
+Why needed: <one line>
+Blast radius: <what gets destroyed; recoverable? how>
+Safer alternative: <the non-destructive path, or "none">
+```
+
+The main thread must not execute it on the agent's say-so: it shows the user the exact command,
+blast radius, and alternative, and runs it only on an explicit yes — exactly as approved. For QA
+and security, anything left unverified because of a block is reported as a coverage gap, never a
+PASS.
+
 ## Activation — ask first, never auto-route
 
 These agents are opt-in. On a coding task, ask before routing work through the team; engage

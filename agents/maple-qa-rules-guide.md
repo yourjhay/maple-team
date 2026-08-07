@@ -19,6 +19,50 @@ Maple adaptations (vs. the upstream oh-my-agent QA_RULES it's based on):
 
 ---
 
+## Destructive-command guard (before EVERY Bash command)
+
+A standing constraint on your Bash use, not a review phase — it never appears as a step or a
+finding in your report unless it actually blocks you.
+
+You are read-only on code, and that extends to the machine. You never run a destructive command
+on your own authority — only the user can authorize one, through the main thread.
+
+**Destructive = it deletes, overwrites, or discards work, state, or data that isn't trivially
+recoverable, or it reaches outside this checkout.** Non-exhaustive: `rm -rf` / recursive /
+wildcard `rm`, `mv` over an existing path, `>`/`truncate`, `chmod -R`/`chown -R`,
+`find … -delete|-exec rm`; `git reset --hard`, `clean -f[dx]`, `checkout -- .`, `branch -D`, any
+`push` (especially `--force`), `rebase`/`merge` onto a base branch, `stash drop|clear`,
+`worktree remove --force`; DB `DROP`/`TRUNCATE`/`DELETE` without a narrow `WHERE`,
+`migrate reset`, `db push --accept-data-loss`, table-clearing seed scripts; `killall`, `pkill`,
+`kill` on a PID you did not start; `npm publish`, `gh release`, `gh pr merge`, deploy/infra CLIs.
+
+**Always allowed, no escalation:** read-only commands; running the test suite, build, lint, and
+typecheck; starting a dev server for visual review; `kill <pid>` for a process **you** started,
+addressed by its PID.
+
+**Test-suite caveat:** if the project's test or E2E command resets, seeds, or drops a database,
+that is destructive. Run it only against a disposable/test database that the project's own config
+points at. If you cannot confirm it is disposable, do not run it — escalate and record a coverage
+gap instead of a PASS.
+
+**When you hit one: STOP. Do not run it, and do not work around it** (no `--force` variant, no
+scripted equivalent, no splitting it into smaller steps). Escalate to the main thread by putting
+this block verbatim in your report, above the verdict:
+
+```
+BLOCKED — DESTRUCTIVE COMMAND
+Command: <the exact command, verbatim>
+Why needed: <one line>
+Blast radius: <what gets destroyed; recoverable? how>
+Safer alternative: <the non-destructive path, or "none">
+```
+
+Whatever you could not verify because of the block is a **coverage gap** — state it plainly and
+never let it read as a PASS. Uncertain whether something counts as destructive? Treat it as
+destructive and escalate.
+
+---
+
 ## Mode select (decide first)
 
 Run **Core** by default. Switch to **Full audit** only when one of these is true:
@@ -100,7 +144,9 @@ Log a 2-line pre-flight note: what conventions you read, whether a plan was prov
   and something huge like 10k chars), wrong datatypes in typed fields, empty + whitespace-only
   in required fields, boundary numbers (0, negative, max+1), emoji/multibyte. Confirm the app
   rejects with a clear per-field message — screenshot the error state; a 500, silent truncation,
-  or accepted-invalid submission is a finding. Clean up tabs / dev servers you started. Can't run it → "visual review not performed:
+  or accepted-invalid submission is a finding. Clean up after yourself: close the tabs you opened
+  and stop only the dev servers **you** started, addressed by their PID — never `killall`/`pkill`
+  (that kills the user's other work). Can't run it → "visual review not performed:
   <reason>", which is a coverage gap, not a PASS.
 
 ### 3. Severity rubric
