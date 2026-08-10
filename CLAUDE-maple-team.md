@@ -19,8 +19,8 @@ asking whenever a question needs real digging ("how does X work", "where does Y 
 | maple-architect | opus | Brainstorm + spec + written plan. MUST use Superpowers skills (brainstorming → writing-plans). Read-only. |
 | maple-engineer | sonnet | Execute the plan, write code. Default engineer. |
 | maple-engineer-hard | opus | Same, for gnarly / high-stakes / subtle work. Escalate here from maple-engineer. |
-| maple-qa | sonnet | Review output (code + visual/E2E via Playwright) against the plan. Fast Core review by default (PASS / CONDITIONAL PASS / FAIL); opt-in Full audit adds extra dimensions, docs/ADR, round tracking, persisted reports. Read-only on code. |
-| maple-security | opus | Adversarial security audit of the diff (authz, injection, money/ledger, data exposure). Read-only critic. |
+| maple-qa | sonnet | Review output (code + visual/E2E via Playwright) against the plan. Fast Core review by default (PASS / CONDITIONAL PASS / FAIL); opt-in Full audit adds extra dimensions, docs/ADR, round tracking, persisted reports. Read-only on code — reports findings (`QA-n`), never fixes. |
+| maple-security | opus | Adversarial security audit of the diff (authz, injection, money/ledger, data exposure). Read-only critic — reports findings (`SEC-n`), never fixes. |
 
 ## Flow (once activated)
 0. maple-researcher (optional, no permission needed) → cited facts on unfamiliar code or
@@ -42,11 +42,35 @@ asking whenever a question needs real digging ("how does X work", "where does Y 
 3. maple-engineer executes → escalate to maple-engineer-hard if genuinely hard
 4. maple-qa (correctness) and maple-security (vulnerabilities) review vs the plan
    before anything is called done — dispatch both in parallel on the same diff.
-   If either triggers code changes, re-run maple-security on the final diff.
-5. Only after both pass: STOP and ASK my permission before merging back — show me the
-   branch, a diff summary, and both verdicts. NEVER merge, rebase, or push to the base
-   branch without my explicit yes. On yes → superpowers:finishing-a-development-branch,
-   then remove the worktree. No answer = work stays on its branch in the worktree.
+   **They report only.** Both are read-only critics; a FAIL is information, not an
+   instruction. Do NOT dispatch an engineer to fix anything off the back of a report.
+5. TRIAGE — ASK ME, always, before any fix. Relay both reports as they came back:
+   verdicts, then every finding by id (`QA-1`, `SEC-1`, …) with severity, file:line, and
+   one-line problem. Then ask via AskUserQuestion what I want done:
+   - **Fix all** — dispatch the engineer with the full findings list.
+   - **Fix selected** — I name ids; dispatch the engineer with only those.
+   - **Fix blockers only** — Critical/High (QA Critical, security Critical/High); rest recorded.
+   - **Record for later, fix nothing** — nothing gets touched.
+   - **Proceed to merge-ask** — offer this from round 2 on; skip straight to step 6.
+   Everything I don't pick is an **accepted-open finding**: write those (id, severity,
+   file:line, problem, source agent, date, verdict they came from) to
+   `docs/qa-reports/<branch-slug>/open-findings.md` in the worktree/branch — append,
+   never overwrite; create the dir if missing. `<branch-slug>` = the same slug maple-qa
+   uses (see "Round detection" in maple-qa-rules-guide.md), so the files land together.
+   No answer = record everything, fix nothing.
+   If fixes were authorized: engineer applies ONLY the picked ids, then re-run maple-qa
+   (telling it explicitly it's a re-review) and maple-security on the final diff, and
+   return to this step with the new reports. Never loop straight back into fixing.
+   **Terminating the loop:** a re-review with no new findings and nothing left unresolved
+   goes straight to step 6 — don't ask again. Otherwise ask again, with "proceed to
+   merge-ask" on the menu. From round 3 on, say plainly that the loop isn't converging
+   (likely a spec gap) and recommend recording the rest rather than another round.
+6. STOP and ASK my permission before merging back — gated on my explicit yes, NOT on the
+   verdicts. I can ship with findings open; that's my call, and open findings never block
+   the ask. Show me: the branch, a diff summary, both latest verdicts, and the list of
+   accepted-open findings (or "none"). NEVER merge, rebase, or push to the base branch
+   without my explicit yes. On yes → superpowers:finishing-a-development-branch, then
+   remove the worktree. No answer = work stays on its branch in the worktree.
 
 ## Destructive commands — ASK ME FIRST, always
 No Maple agent, and not the orchestrator either, runs a destructive command on its own
@@ -73,7 +97,7 @@ would be destructive: STOP, show me the exact command verbatim, the blast radius
 recoverable, and the safer alternative, and ask via AskUserQuestion. Run it only on my explicit
 yes, exactly as approved — no broader variant, no re-running it later without asking again. If I
 say no, tell the agent so and have it continue without it. Merging/rebasing/pushing to the base
-branch and removing the worktree are already gated by step 5 — same rule, don't invent a second one.
+branch and removing the worktree are already gated by step 6 — same rule, don't invent a second one.
 
 ## Constraints (Claude Code reality)
 - Subagents cannot call other subagents. The MAIN thread orchestrates all routing and
@@ -88,3 +112,7 @@ branch and removing the worktree are already gated by step 5 — same rule, don'
   self-escalates on big/high-risk changes) to get round-aware re-review + persisted
   reports under docs/qa-reports/. It cannot ask questions mid-run — relay anything in
   its "Clarifications Needed" section to me.
+- maple-qa and maple-security are reporters, not gates. Their verdicts never authorize a
+  fix, a re-run, or a merge on their own — only step 5's answer from me does. Don't
+  paraphrase away findings when relaying: ids, severities, and file:line stay intact so I
+  can pick by id. Neither agent writes open-findings.md; that's yours (step 5).

@@ -21,8 +21,8 @@ file with YAML frontmatter that Claude loads as a callable agent type.
 | `maple-architect` | opus | Brainstorm + spec + written plan before any code. Read-only. |
 | `maple-engineer` | sonnet | Execute the plan, write code. Default engineer. |
 | `maple-engineer-hard` | opus | Same, for gnarly / high-stakes / subtle work. Escalate here. |
-| `maple-qa` | sonnet | Review output (code + visual/E2E via Playwright) against the plan. Fast **Core** review by default (PASS / CONDITIONAL PASS / FAIL); opt-in **Full audit** adds extra dimensions, docs/ADR, round tracking, persisted reports. Read-only on code. |
-| `maple-security` | opus | Adversarial security audit (OWASP Top 10 + more). Read-only critic. |
+| `maple-qa` | sonnet | Review output (code + visual/E2E via Playwright) against the plan. Fast **Core** review by default (PASS / CONDITIONAL PASS / FAIL); opt-in **Full audit** adds extra dimensions, docs/ADR, round tracking, persisted reports. Read-only on code — reports findings (`QA-n`), never fixes. |
+| `maple-security` | opus | Adversarial security audit (OWASP Top 10 + more). Read-only critic — reports findings (`SEC-n`), never fixes. |
 
 `maple-security-audit-guide.md` and `maple-qa-rules-guide.md` are not agents — they're the
 authoritative playbooks the security and QA agents read first (operating modes, checklists,
@@ -74,11 +74,24 @@ machine; a **user**/`--dest` install writes absolute paths.
    branch of the main checkout (no isolation).
 3. `maple-engineer` executes → escalate to `maple-engineer-hard` if genuinely hard.
 4. `maple-qa` (correctness) and `maple-security` (vulnerabilities) review vs the plan before
-   anything is called done — dispatch both in parallel on the same diff. If fixes change the
-   diff, re-run `maple-security` on the final code.
-5. Only after both pass: **stop and ask the user's permission before merging back** — show
-   the branch, a diff summary, and both verdicts. Never merge, rebase, or push to the base
-   branch without an explicit yes. On yes → `superpowers:finishing-a-development-branch`,
+   anything is called done — dispatch both in parallel on the same diff. **They report only:**
+   read-only critics, findings numbered `QA-n` / `SEC-n`. A FAIL is information, not an
+   instruction — no engineer gets dispatched off the back of a report.
+5. **Triage — ask first.** Relay both reports intact (verdicts, then every finding by id with
+   severity + `file:line`), then ask the user what to do: fix all / fix selected ids / fix
+   blockers only (Critical–High) / record everything for later — plus "proceed to merge-ask"
+   from round 2 on. Nothing is fixed without that answer; no answer = record, fix nothing.
+   Findings the user doesn't pick become **accepted-open findings**, appended by the main
+   thread to `docs/qa-reports/<branch-slug>/open-findings.md` on the worktree/branch (same
+   branch slug maple-qa uses for its reports, so both land together). If fixes were
+   authorized, the engineer applies only the picked ids, QA (told it's a re-review) and
+   security re-run on the final diff, and the flow returns here with the new reports. A clean
+   re-review goes straight to step 6 without another ask; by round 3 the orchestrator says the
+   loop isn't converging and recommends recording the rest.
+6. **Stop and ask the user's permission before merging back** — gated on an explicit yes, not on
+   the verdicts; shipping with findings open is the user's call. Show the branch, a diff summary,
+   both latest verdicts, and the accepted-open findings. Never merge, rebase, or push to the base
+   branch without that yes. On yes → `superpowers:finishing-a-development-branch`,
    then remove the worktree. No answer = work stays on its branch in the worktree.
 
 ## Destructive commands — ask first, always
@@ -136,6 +149,8 @@ ask-first.
   the `playwright` Claude Code plugin installed) for visual/E2E review. It is round-aware via
   `docs/qa-reports/`, and cannot ask questions mid-run — relay its "Clarifications Needed"
   section to the user.
+- `maple-qa` and `maple-security` are reporters, not gates. Their verdicts authorize nothing on
+  their own — no fix, no re-run, no merge. Only the user's triage answer (step 5) does.
 
 ## CLAUDE.md
 

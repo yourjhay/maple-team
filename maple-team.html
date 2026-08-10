@@ -15,7 +15,7 @@
 <!-- Open Graph (Facebook / LinkedIn / Slack / Discord) -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Maple Team — How It Works">
-<meta property="og:description" content="Seven specialist AI agents, one orchestrator. Watch a task travel the pipeline: research, plan, second opinion, build, escalate, QA verdict, security audit.">
+<meta property="og:description" content="Seven specialist AI agents, one orchestrator. Watch a task travel the pipeline: research, plan, second opinion, build, escalate, QA verdict, security audit — findings land, you decide.">
 <meta property="og:site_name" content="Maple Team">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://yourjhay.github.io/maple-team/">
@@ -26,7 +26,7 @@
 <!-- Twitter / X -->
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Maple Team — How It Works">
-<meta name="twitter:description" content="Seven specialist AI agents, one orchestrator. Animated pipeline: research, plan, second opinion, build, escalate, QA verdict, security audit.">
+<meta name="twitter:description" content="Seven specialist AI agents, one orchestrator. Animated pipeline: research, plan, second opinion, build, escalate, QA verdict, security audit — findings land, you decide.">
 <meta name="twitter:image" content="https://yourjhay.github.io/maple-team/maple-render.png">
 
 <!-- Favicon (inline, no extra file needed) -->
@@ -433,7 +433,7 @@
           <span class="badge model">Sonnet</span>
           <span class="badge">read-only critic</span>
         </div>
-        <p>Assumes it's broken until evidence says otherwise. Reads the diff, runs the tests itself, checks every plan requirement. Verdict: PASS / FAIL / PASS-WITH-NITS.</p>
+        <p>Assumes it's broken until evidence says otherwise. Reads the diff, runs the tests itself, checks every plan requirement. Verdict: PASS / CONDITIONAL PASS / FAIL &mdash; and it stops there. Findings come back numbered <code>QA-1</code>, <code>QA-2</code>&hellip;; you decide which get fixed.</p>
         <div class="tools">Read · Grep · Glob · Bash · browser tools on request</div>
       </div>
       <div class="card" style="--ac:var(--c-sec); --glow:var(--c-sec)">
@@ -443,7 +443,7 @@
           <span class="badge model">Opus 4.8 · ultrathink</span>
           <span class="badge">read-only critic</span>
         </div>
-        <p>Attacks the change before an attacker does. Docs-first, tech-stack agnostic, OWASP Top 10 as the floor — authz, injection, secrets, money integrity. Defensive only: finds holes, never weaponizes them.</p>
+        <p>Attacks the change before an attacker does. Docs-first, tech-stack agnostic, OWASP Top 10 as the floor — authz, injection, secrets, money integrity. Defensive only: finds holes, never weaponizes them &mdash; and never fixes them either. Findings arrive as <code>SEC-1</code>, <code>SEC-2</code>&hellip; for you to triage.</p>
         <div class="tools">Read · Grep · Glob · Bash · audit-guide playbook</div>
       </div>
     </div>
@@ -648,7 +648,7 @@
      active:["main","qa"], pulses:[["e-main-qa",false,"#ffb454"]]},
     {t:"The audit",        d:"In parallel, Security attacks the diff — OWASP Top 10, authz, injection, secrets. Defensive only; nothing gets weaponized.",
      active:["main","sec"], pulses:[["e-main-sec",false,"#e5484d"],["e-main-sec",true,"#e5484d"]]},
-    {t:"Verdict: PASS",    d:"Evidence in hand — tests green, no holes — the orchestrator reports back. Done means proven done.",
+    {t:"Your call",        d:"Both reports land — verdicts, findings numbered QA-1, SEC-1. Nothing gets fixed on a verdict alone: you pick fix all, fix selected, blockers only, or record for later. Merging waits on your yes too.",
      active:["qa","sec","main","you"], pulses:[["e-main-qa",true,"#ffb454"],["e-main-sec",true,"#e5484d"],["e-you-main",true,"#e8613c"]]}
   ];
 

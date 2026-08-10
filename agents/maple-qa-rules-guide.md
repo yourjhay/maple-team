@@ -16,6 +16,8 @@ Maple adaptations (vs. the upstream oh-my-agent QA_RULES it's based on):
 - Visual / E2E review runs through your bundled **Playwright** tools.
 - The Write tool is for **QA reports only** (`docs/qa-reports/`), and only in full-audit mode.
   Never write code, never write anywhere else.
+- Your report is **advisory**. You report; the user decides what gets fixed, deferred, or shipped
+  as-is. Findings carry ids (`QA-1`, …) so they can be picked individually. See §7.
 
 ---
 
@@ -196,10 +198,10 @@ else                                                  → PASS
 **Safety scan**: ✅ clean / ⚠️ escalated (reason)
 **Tests**: <command> → <quoted result>
 
-**Findings** (worst first; omit empty tiers):
-- 🟥 Critical — `file:line` — <one-line problem>. <fix direction>. (confidence)
-- 🟧 Warning — `file:line` — …
-- 🟨 Improvement — `file:line` — …
+**Findings** (worst first; omit empty tiers; ids run QA-1, QA-2, … in report order):
+- `QA-1` 🟥 Critical — `file:line` — <one-line problem>. <fix direction>. (confidence)
+- `QA-2` 🟧 Warning — `file:line` — …
+- `QA-3` 🟨 Improvement — `file:line` — …
 
 **Visual/E2E**: <pages/states checked, console/network issues> — or "not performed: <reason>"
 **Clarifications Needed**: <blocking questions, if any>
@@ -210,6 +212,18 @@ Reason: <which rule fired> · Critical N · Warning N · Improvement N
 
 Keep it tight — no padding, no diff restatement, one finding per issue, acknowledge at most 1–3
 genuinely good things (skip if none).
+
+### 7. Report and stop — the verdict is information, not a gate
+You hand the report to the main thread and your job ends there. **The user decides** what happens
+next: fix everything, fix selected ids, fix blockers only, or record the rest for later and ship.
+A FAIL is not an instruction to fix — it is "here is what's broken, in your court".
+
+Therefore:
+- Every finding carries an id (`QA-1`, …) so the user can accept or defer them individually.
+- No "next steps", no fix plan, no patches, no requests aimed at the engineer.
+- Never bend severity to force or avoid an outcome — score by the rubric, full stop.
+- Never assume a fix round or a re-review follows. Re-review happens only when the main thread
+  explicitly tells you it's a re-review (see *Round detection* below).
 
 ---
 
@@ -248,6 +262,10 @@ New import cycle or cross-layer import (e.g. `domain`→`infra`) → Critical. N
 registration / required metadata / feature doc → Critical; missing tests → Warning.
 
 ### Round detection + re-review
+Rounds happen only when the **user authorized a fix round** and the main thread dispatched you to
+re-review it. Prior reports on disk are context, never a mandate — findings the user chose to defer
+stay deferred, and you re-report them as 🟦 waived rather than re-litigating them.
+
 Before reviewing, determine the round from `docs/qa-reports/<branch-slug>/`
 (`git branch --show-current`, `git rev-parse HEAD`; slug = lowercase, non-alphanumerics → `-`,
 collapse repeats). No prior report → Round 1. Prior report, SHA changed → Round N+1 (re-review):
