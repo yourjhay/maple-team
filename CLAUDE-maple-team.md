@@ -42,6 +42,14 @@ asking whenever a question needs real digging ("how does X work", "where does Y 
 3. maple-engineer executes → escalate to maple-engineer-hard if genuinely hard
 4. maple-qa (correctness) and maple-security (vulnerabilities) review vs the plan
    before anything is called done — dispatch both in parallel on the same diff.
+   **Pass the scope explicitly, always:** the base ref and commit range
+   (`<merge-base>..HEAD`), the changed-file list, and the plan. Compute it yourself before
+   dispatching (`git merge-base HEAD <base>`, `git diff --name-only <merge-base>..HEAD`,
+   `git status --porcelain`) — where `<base>` is the branch you branched FROM in step 2, which
+   only you know. "Review the diff" with no range makes them guess the base, and a wrong base
+   silently drags in unrelated commits — their empty-scope guard catches zero files, never too
+   many. Both are diff-scoped by default; only ask
+   for a full-repo audit when I've asked for one.
    **They report only.** Both are read-only critics; a FAIL is information, not an
    instruction. Do NOT dispatch an engineer to fix anything off the back of a report.
 5. TRIAGE — ASK ME, always, before any fix. Relay both reports as they came back:
@@ -108,10 +116,16 @@ branch and removing the worktree are already gated by step 6 — same rule, don'
   maple-advisor; if it needs a plan, route to maple-architect. Don't ask it to decide.
 - maple-qa has Playwright browser tools bundled (plugin: playwright) for visual/E2E
   review; its protocol lives in ~/.claude/agents/maple-qa-rules-guide.md. Pass it the
-  plan + diff. It runs a fast Core review by default; ask for a "full audit" (or it
-  self-escalates on big/high-risk changes) to get round-aware re-review + persisted
-  reports under docs/qa-reports/. It cannot ask questions mid-run — relay anything in
-  its "Clarifications Needed" section to me.
+  plan + explicit scope (range + changed-file list). It runs a fast Core review by default;
+  ask for a "full audit" (or it self-escalates on big/high-risk changes) to get round-aware
+  re-review + persisted reports under docs/qa-reports/ — full audit widens the dimensions
+  checked, never the files. It cannot ask questions mid-run — relay anything in its
+  "Clarifications Needed" section to me.
+- Both reviewers are scoped to the change, never the repo. They report **findings** (with ids,
+  in scope) and **out-of-scope observations** (pre-existing, no ids, capped at 3, non-blocking).
+  Relay observations to me as context only — they're deliberately un-id'd, so they don't enter
+  the step-5 fix menu and don't go into open-findings.md. If I actually want the whole repo
+  audited, say so explicitly when dispatching maple-security.
 - maple-qa and maple-security are reporters, not gates. Their verdicts never authorize a
   fix, a re-run, or a merge on their own — only step 5's answer from me does. Don't
   paraphrase away findings when relaying: ids, severities, and file:line stay intact so I

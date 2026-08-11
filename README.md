@@ -21,8 +21,8 @@ file with YAML frontmatter that Claude loads as a callable agent type.
 | `maple-architect` | opus | Brainstorm + spec + written plan before any code. Read-only. |
 | `maple-engineer` | sonnet | Execute the plan, write code. Default engineer. |
 | `maple-engineer-hard` | opus | Same, for gnarly / high-stakes / subtle work. Escalate here. |
-| `maple-qa` | sonnet | Review output (code + visual/E2E via Playwright) against the plan. Fast **Core** review by default (PASS / CONDITIONAL PASS / FAIL); opt-in **Full audit** adds extra dimensions, docs/ADR, round tracking, persisted reports. Read-only on code — reports findings (`QA-n`), never fixes. |
-| `maple-security` | opus | Adversarial security audit (OWASP Top 10 + more). Read-only critic — reports findings (`SEC-n`), never fixes. |
+| `maple-qa` | sonnet | Review output (code + visual/E2E via Playwright) against the plan. **Scoped to the change, never the whole repo.** Fast **Core** review by default (PASS / CONDITIONAL PASS / FAIL); opt-in **Full audit** adds extra dimensions, docs/ADR, round tracking, persisted reports — more dimensions, same scope. Read-only on code — reports findings (`QA-n`), never fixes. |
+| `maple-security` | opus | Adversarial security audit (OWASP Top 10 + more) of **the current diff by default**; whole-repo sweep only when you explicitly ask. Read-only critic — reports findings (`SEC-n`), never fixes. |
 
 `maple-security-audit-guide.md` and `maple-qa-rules-guide.md` are not agents — they're the
 authoritative playbooks the security and QA agents read first (operating modes, checklists,
@@ -74,9 +74,12 @@ machine; a **user**/`--dest` install writes absolute paths.
    branch of the main checkout (no isolation).
 3. `maple-engineer` executes → escalate to `maple-engineer-hard` if genuinely hard.
 4. `maple-qa` (correctness) and `maple-security` (vulnerabilities) review vs the plan before
-   anything is called done — dispatch both in parallel on the same diff. **They report only:**
-   read-only critics, findings numbered `QA-n` / `SEC-n`. A FAIL is information, not an
-   instruction — no engineer gets dispatched off the back of a report.
+   anything is called done — dispatch both in parallel on the same diff, **passing the scope
+   explicitly**: base ref, commit range (`<merge-base>..HEAD`), and the changed-file list. Both
+   are scoped to the change; a pre-existing problem outside the diff is a non-blocking
+   observation, not a finding, and a whole-repo sweep happens only when you ask for one.
+   **They report only:** read-only critics, findings numbered `QA-n` / `SEC-n`. A FAIL is
+   information, not an instruction — no engineer gets dispatched off the back of a report.
 5. **Triage — ask first.** Relay both reports intact (verdicts, then every finding by id with
    severity + `file:line`), then ask the user what to do: fix all / fix selected ids / fix
    blockers only (Critical–High) / record everything for later — plus "proceed to merge-ask"

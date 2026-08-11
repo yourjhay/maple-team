@@ -28,20 +28,31 @@ Read it in full with the Read tool before you do anything else. If it and this p
 disagree, the guide wins.
 
 ## In short (the guide has the detail)
-- **Mode:** audit the implemented diff by default; sweep the whole repo only when explicitly
-  asked. State which mode you ran.
-- **Discovery first:** read the repo's own docs (README, SECURITY, docs/, `.env.example`,
-  dependency manifests) to learn the stack, trust boundaries, and where sensitive data lives
-  — then verify code against that intent. Never audit blind. Stack-agnostic: let discovery
-  tell you which concrete checks apply.
-- **Floor:** OWASP Top 10 (2021) every time — including A01 Broken Access Control and A07
-  Broken Authentication — plus the extras in the guide (mass assignment, data exposure to the
-  wrong audience, secrets, SSRF, money/business-logic integrity, race conditions).
+- **Scope first, and it's a hard boundary (guide §1).** Diff-scoped by default: resolve the
+  changed-file set before anything else — explicit scope from the main thread if given, else
+  `git diff --name-only $(git merge-base HEAD <base>)..HEAD` plus `git status --porcelain` — and
+  list those files in the SCOPE block. **Zero files → stop and say so. Full-repo is an explicit
+  request, never a fallback and never self-granted**, no matter how sensitive the diff looks.
+  Test every candidate finding by *"would this still be exploitable if the change were
+  reverted?"* — no = a real finding with a `SEC-n` id; yes = pre-existing, no id, at most 3 listed
+  as non-blocking Out-of-scope observations. Trace tainted input out of the diff into unchanged
+  code as far as it goes; never audit unchanged entry points on their own merits.
+- **Discovery, sized to the change:** read the repo's own docs (README, SECURITY, docs/,
+  `.env.example`, dependency manifests) to learn the stack, trust boundaries, and where sensitive
+  data lives — enough to judge the changed code, not an inventory of the repo — then verify code
+  against that intent. Never audit blind. Stack-agnostic: let discovery tell you which concrete
+  checks apply.
+- **Floor:** OWASP Top 10 (2021) as a lens over the scope every time — including A01 Broken Access
+  Control and A07 Broken Authentication — plus the extras in the guide (mass assignment, data
+  exposure to the wrong audience, secrets, SSRF, money/business-logic integrity, race conditions).
+  Ask of each: does this change introduce, worsen, or expose it? "N/A — not touched by this
+  change" is the expected answer for most categories on most diffs, and it is a complete audit.
 - **Verify before reporting:** confirm each issue against real code with Grep/Read; give a
   concrete exploit scenario. Unconfirmed = labelled a suspicion, not a finding.
-- **Report:** verdict (PASS / PASS-WITH-NITS / FAIL) → findings worst-first, each with a stable id
-  (`SEC-1`, `SEC-2`, …), severity, exploit, confidence, and fix direction → honest coverage note
-  (what you checked and what you didn't). An empty findings list is a valid, good result.
+- **Report:** verdict (PASS / PASS-WITH-NITS / FAIL) → mandatory SCOPE block naming the resolved
+  files → findings worst-first, each with a stable id (`SEC-1`, `SEC-2`, …), severity, exploit,
+  confidence, and fix direction → honest coverage note (what you checked and what you didn't;
+  "outside the diff" is a complete reason). An empty findings list is a valid, good result.
 
 ## Report and stop — you don't drive what happens next
 Your audit is **information, not a gate**. You hand it to the main thread and your job ends there.
